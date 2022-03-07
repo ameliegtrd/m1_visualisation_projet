@@ -1,15 +1,23 @@
 #### LIBRAIRIES
 library(shiny)
 library(bs4Dash)
+library(tidyverse)
+library(DT)
 
+# pour sauvegarder les donnees traitees et pouvoir les utiliser directement dans shiny
+# setwd("C:/Users/Amélie/Documents/TRAVAIL/M1 MAS/VISUALISATION DES DONNEES/R/Projet_Shiny/criminalite/www")
+# save(delits_fr_2016_final,homicide_final,cambriolage_final, file="donnees_criminalite.RData")
 
 ### CONTENU DES PAGES
-baccueil <- chartjs(height = "200px") %>% 
-    cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
-    cjsDoughnut(cutout = 50, labels = LETTERS[1:4]) %>%
-    cjsSeries(data = c(1:4))
+baccueil <- box(title ="Nos données", status = "info", solidHeader = TRUE, width = 6,
+collapsible = TRUE, align="justify", DT::dataTableOutput("mytable"))
 
-bstats_desc <- lapply(1:20, box, width = 12, title = "box")
+
+bstats_desc <- chartjs(height = "200px") %>% 
+    cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
+    cjsDoughnut(labels = LETTERS[1:4]) %>%
+    cjsSeries(data = c(1:4))
+    
 
 bregression <- lapply(1:20, box, width = 12, title = "box")
 
