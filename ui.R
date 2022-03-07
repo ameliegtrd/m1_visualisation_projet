@@ -4,7 +4,10 @@ library(bs4Dash)
 
 
 ### CONTENU DES PAGES
-baccueil <- lapply(1:20, box, width = 12, title = "box")
+baccueil <- chartjs(height = "200px") %>% 
+    cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
+    cjsDoughnut(cutout = 50, labels = LETTERS[1:4]) %>%
+    cjsSeries(data = c(1:4))
 
 bstats_desc <- lapply(1:20, box, width = 12, title = "box")
 
