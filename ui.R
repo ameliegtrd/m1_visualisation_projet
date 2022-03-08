@@ -3,6 +3,7 @@ library(shiny)
 library(bs4Dash)
 library(tidyverse)
 library(DT)
+library(chartjs)
 
 # code dans le fichier Rmd du projet econometrie pour sauvegarder les donnees traitees et pouvoir les utiliser directement dans shiny
 # setwd("C:/Users/Amélie/Documents/TRAVAIL/M1 MAS/VISUALISATION DES DONNEES/R/Projet_Shiny/criminalite/www")
@@ -14,9 +15,11 @@ collapsible = TRUE, align="justify", DT::dataTableOutput("mytable"))
 
 
 bstats_desc <- chartjs(height = "200px") %>% 
-    cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
+    cjsOptions(animation = list(animateScale = T, animateDelayed=T, animateRotate = FALSE),
+               color = "red") %>%
     cjsDoughnut(labels = LETTERS[1:4]) %>%
-    cjsSeries(data = c(1:4))
+    cjsSeries(data = c(1:4)) %>% 
+    cjsLegend(position = "bottom")
     
 
 bregression <- lapply(1:20, box, width = 12, title = "box")
@@ -56,7 +59,7 @@ ui <- dashboardPage(
     ),
     
     ## contenu des pages
-    dashboardBody(
+    dashboardBody( includeCSS("www/style.css"),
         tabItems(
             # page donnees
             tabItem(tabName = "accueil", baccueil
