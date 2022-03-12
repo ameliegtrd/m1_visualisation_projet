@@ -1,5 +1,5 @@
 ---
-title: "La criminalité en France métropolitaine en 2016"
+title: "La criminalité en France métropolitaine en 2016"
 author: "Floch Elisa, Goutard Amelie et Marmion Violette"
 date: "21/03/2022"
 output: 
@@ -18,33 +18,126 @@ output:
     toc_float: true
 ---
 
+<style>body {text-align: justify}</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
 # 1. Présentation du sujet 
 
-L’objectif de cette application est de présenter à l‘utilisateur une interface qui lui permette d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
+L’objectif de cette application (disponible [ici](https://data.world/notgibs/rolling-stones-top-500-albums)) est de présenter à l‘utilisateur une interface qui lui permettra d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
 
-Un modèle de données de panel a été estimé en utilisant les données des départements français. Pour construire notre modèle, nous avons considéré plusieurs facteurs sociaux qui pourraient contribuer à l’évolution du phénomène.
+Un modèle de données de panel a été estimé en utilisant les données des départements français. Pour construire notre modèle, nous avons considéré plusieurs facteurs sociaux qui pourraient contribuer à l’évolution du phénomène.
 
-L’analyse se concentrera sur les déterminants de tous les délits recensés en France métropolitaine en 2016. Prenons la définition de la criminalité donnée par l’INSEE, les crimes et délits constatés en France sont des faits bruts portés pour la première fois à la connaissance des services de police et de gendarmerie. Sont exclus des statistiques de la criminalité constatée, l'ensemble des contraventions ainsi que les délits relatifs à la circulation routière, les actes de police administrative et les infractions relevées par d'autres administrations (douanes, services fiscaux et répression des fraudes, inspection du travail...).
+L’analyse se concentrera sur les déterminants de tous les délits recensés en France métropolitaine en 2016. Prenons la définition de la criminalité donnée par l’INSEE, les crimes et délits constatés en France sont des faits bruts portés pour la première fois à la connaissance des services de police et de gendarmerie. Sont exclus des statistiques de la criminalité constatée, l'ensemble des contraventions ainsi que les délits relatifs à la circulation routière, les actes de police administrative et les infractions relevées par d'autres administrations (douanes, services fiscaux et répression des fraudes, inspection du travail...).
 
 # 2. Présentation des données
 
-Voici le dictionnaire des données : 
+## 2.1 Importation des données
 
-Champs  | Correspondance | Occurences | Type de données |
-------------- | ------------- | ------------- | ------------- |
-Département  | Numéro de département (France métropolitaine) |{0, ...2A,2B, ..., 95} | Qualitative |
-Total_delits | Nombre de délits violents par département en 2016 | {530, ..., 57 902} | Quantitative discrète |
-Salaire_median | Salaire médian par département en 2016 | {22 272, ...} | Quantitative continue |
-Tx_pauvrete_seuil60 | Taux de pauvreté au seuil de 60% (en%) par département en 2016 |{10.7, 18.9, ...} | Quantitative continue |
-Taux_chomage_moyen | Taux de chômage (en%) par département en 2016 | {7.35, 13.7, ...} | Quantitative continue |
-Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+Dans un premier temps, nous avons importé les différentes bases de données. La base principale porte sur les délits en France en 2016. Nous avons supprimé les lignes vides intitulées « index non utilisés ». Ensuite, nous avons attribué comme nom de ligne, le nom des différents délits. Puis, nous avons transposé la base car nous souhaitions avoir les délits en colonne et nous avons ajouté une colonne comprenant les 96 départements de France métropolitaine. Suite à cela, nous avons importé les bases contenant les différents indicateurs. Les bases incluant les données sur la population, le taux de pauvreté et l’indice de Gini ont été importées facilement. Nous avons seulement dû renommer la variable département pour que les jointures se fassent naturellement. En revanche, nous avons dû modifier la base diplôme en regroupant certaines colonnes. Les variables représentant le niveau de diplôme étaient ordonnées par sexe et par tranche d’âge, nous avons donc regroupé les colonnes par type car nous nous intéressons à la population générale. De plus, les données étant triées par commune, nous avons effectué un nouveau regroupement pour les avoir par département. Enfin, nous avons ajouté la population totale pour chaque département afin de calculer la part de personnes diplômées et la part de personnes non-diplômées. Pour finir, la base sur le taux de chômage contenait des données allant de 1982 à 2019, nous avons seulement conservé les données de 2016. Les données étant présentées par trimestre, nous avons décidé d’en faire la moyenne pour avoir un taux de chômage annuel moyen pour chaque département. Nous avons décidé d'exclure le salaire médian de notre analyse puisque celui-ci diffère en fonction du département (ex : vie qui coute plus chère à Paris donc salaires plus élevés) alors que l'indice de gini mesure l'inégalité des revenus. 
 
-# 3. Statistiques descriptives
+Dans un second temps, nous avons vérifié qu’il n’y avait pas de données manquantes ou aberrantes. Une fois la révision faite, nous avons pu créer différentes bases. Il existe différents groupes de délits tels que les homicides, les violences sexuelles, les coups et blessures volontaires, les vols avec armes, etc.
 
-## 3.1 Statistiques univariées
+Ensuite, nous avons ajouté les marges sur la base complète : une ligne avec le nombre total de chaque délit ainsi qu’une colonne avec le nombre total de délits pour chaque département.
 
-## 3.2 Statistiques bivariées
+Dans un dernier temps, nous avons fait la jointure des bases. Nous avons joint la base aux données concernant la population, la pauvreté, le diplôme, l’indice de Gini et le taux de chômage pour chaque département.
 
-# 4. Modélisation économétrique
+```{r library, eval=TRUE, include=TRUE, results='hide', class.source = 'foldable'}
+# Definition du repertoire
+getwd()
+setwd("~/Desktop/scolarité/M1 MAS/Semestre 2/Visualisation/Projet/www")
+
+# Definition des librairies dont on a besoin
+load_lib <- c("tidyverse","readxl","lmtest","systemfit","ggcorrplot", "ggpmisc","cowplot","sandwich", "kableExtra", "knitr", "rAmCharts")
+
+# Packages necessaires qui ne sont pas installes
+install_lib <- load_lib[!load_lib %in% installed.packages()] 
+# Installation des packages manquants
+for (lib in install_lib) install.packages(lib,dependencies=TRUE) 
+# Chargement des packages
+sapply(load_lib,require,character=TRUE)
+
+
+### Importation des donnees
+
+## Donnees sur les délits en France en 2016
+
+# data delits_fr_2016
+readLines("delits_fr_2016.csv",2)
+# on regarde l'encodage
+guess_encoding("delits_fr_2016.csv")
+# on importe
+delits_fr_2016  <- read.csv("delits_fr_2016.csv", encoding = "utf-8", fileEncoding = "utf-8", sep=";",dec=".", header = T)
+# on supprime les 2 premieres colonnes et les delits "Index non utilise" 
+delits_fr_2016 <- delits_fr_2016 %>%  filter(libellé.index != "Index non utilisé") %>%  select(c(-1,-2)) 
+# on renomme les lignes
+rownames(delits_fr_2016) <- delits_fr_2016[,1]
+# on transpose et on ajoute une colonne departement
+departement=c("01","02","03","04","05","06","07","08","09",10:19,"2A","2B",21:95)
+delits_fr_2016_2  <- delits_fr_2016  %>% select(-1) %>% t %>% as.data.frame() %>% mutate("Departement" = departement) %>% relocate("Departement", .before = 1)
+# summary(delits_fr_2016_2)
+
+## Donnees population
+population  <- read_excel("donnees.xlsx", sheet ="Population", skip=7, col_names = T)
+population  <- population %>% rename("Departement" = "Code département")
+summary(population)
+
+## Donnees pauvrete
+pauvrete  <- read_excel("donnees.xlsx", sheet ="Pauvrete", skip=4, col_names = T)
+pauvrete <- pauvrete %>% select(-2) %>% rename("Departement" = "Code géographique")
+summary(pauvrete)
+
+## Donnees diplome
+diplome_inital <- read_excel("donnees.xlsx", col_names = T,sheet ="Diplome", skip=3)
+diplome_inital <- diplome_inital  %>% rename("Departement" = "Département\r\nen géographie courante") %>% select(c(-1,-3:-6))
+summary(diplome_inital)
+# on regroupe les colonnes
+Aucun_diplome = pull(round(diplome_inital[,2] + diplome_inital[,3] + diplome_inital[,4] + diplome_inital[,5]))
+Niveau_CAP_BEP = pull(round(diplome_inital[,5] + diplome_inital[,6] + diplome_inital[,7] + diplome_inital[,8]))
+Niveau_BAC = pull(round(diplome_inital[,9] + diplome_inital[,10] + diplome_inital[,11] + diplome_inital[,12]))
+Etudes_sup = pull(round(diplome_inital[,13] + diplome_inital[,14] + diplome_inital[,15] + diplome_inital[,16]))
+diplome = tibble(Departement = pull(diplome_inital[,"Departement"]),Aucun_diplome = Aucun_diplome, Niveau_CAP_BEP = Niveau_CAP_BEP, Niveau_BAC = Niveau_BAC, Etudes_sup = Etudes_sup)
+# on regroupe par departement
+diplome <- diplome %>% group_by(Departement) %>% summarise(Aucun_diplome = sum(Aucun_diplome, na.rm=T),Niveau_CAP_BEP = sum(Niveau_CAP_BEP, na.rm=T),Niveau_BAC =sum(Niveau_BAC, na.rm = T) ,Etudes_sup = sum(Etudes_sup, na.rm = T)) 
+# on ajoute pour chaque departement la "population" totale (relative aux donnees)
+diplome <- diplome %>% mutate(Total = rowSums(diplome[,2:ncol(diplome)]))
+# on ajoute le pourcentage de diplomes et de non diplomes pour chaque departement
+diplome <- diplome %>% mutate(Part_non_diplome = round((Aucun_diplome/Total)*100,3))
+
+## Donnees revenu median et indice de Gini
+revenu_median  <- read_excel("donnees.xlsx", sheet ="Revenu_median_Gini", skip=4, col_names = T)
+revenu_median <- revenu_median %>% rename("Departement" = "Code géographique") %>% select(-2)
+
+## Donnees taux de chomage
+taux_chomage  <- read_excel("donnees.xlsx", sheet ="Taux_chomage", col_names = T)
+# on ne garde que les donnees concernant l'annee 2016
+taux_chomage <- taux_chomage %>% rename("Departement" = "Code") %>% select("Departement","T1_2016","T2_2016","T3_2016","T4_2016")
+# on rajoute le taux de chomage moyen sur l'annee pour chaque departement
+taux_chomage <- taux_chomage %>% mutate(Taux_chomage_moyen = (T1_2016+T2_2016+T3_2016+T4_2016)/4)
+
+## Donnees manquantes ?
+# on regarde s'il y a des donnees manquantes
+delits_fr_2016_2 %>% summarise_all(~ sum(is.na(.))) %>% View() # pour chaque colonne
+delits_fr_2016_2 %>% map_df(~sum(is.na(.))) %>% rowSums() # au total
+# aucune valeur manquante
+
+# On ajoute les marges sur la base complete (avec tous les delits)
+## on ajoute une ligne qui, pour chaque type de delit, compte le nombre de delits tout departement confondu
+delits_fr_2016_2["total_delits_par_type_delit",] <- c(NA,colSums(delits_fr_2016_2[,2:ncol(delits_fr_2016_2)]))
+# on ajoute une colonne qui pour chaque departement compte le nombre de delits commis
+delits_fr_2016_2 <- delits_fr_2016_2 %>% mutate(total_delits_par_departement = rowSums(delits_fr_2016_2[,2:ncol(delits_fr_2016_2)]))
+# On supprime les objets dont on n'a plus besoin
+rm(Aucun_diplome,departement,Etudes_sup,install_lib,lib,load_lib,Niveau_BAC,Niveau_CAP_BEP)
+
+## Jointure des bases
+# On joint a la base "delits_fr_2016_2" les donnees concernant la population, la pauvrete, le diplome, la revenu median et le taux de chomage pour chaque departement
+delits_fr_2016_final <- delits_fr_2016_2 %>% left_join(y = population,by="Departement") %>% left_join(y=pauvrete, by="Departement") %>% left_join(y=diplome, by="Departement") %>% left_join(y=revenu_median, by="Departement") %>% left_join(y=taux_chomage, by="Departement")
+delits_fr_2016_final[97,"Departement"] <- "Tout_departement"
+
+## Creation base finale
+# on cree notre base finale, avec uniquement les variables qu'on souhaite utiliser et on rajoute une colonne qui correspond au nombre de délits pour 100 000 habitants
+# pour tous les delits
+criminalite <- delits_fr_2016_final[-nrow(delits_fr_2016_final),] %>% select("Departement", Total_delits=total_delits_par_departement, Salaire_median = "Médiane (€)", Tx_pauvrete_seuil60 = "Taux de pauvreté au seuil de 60% (%)", "Taux_chomage_moyen","Part_non_diplome", Indice_gini = "Indice de Gini",Population="Population municipale") %>% mutate("Nb_delits_100000hab" = (Total_delits/Population)*100000)
+```
