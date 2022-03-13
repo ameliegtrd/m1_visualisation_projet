@@ -9,27 +9,70 @@ library(chartjs)
 # setwd("C:/Users/Amélie/Documents/TRAVAIL/M1 MAS/VISUALISATION DES DONNEES/R/Projet_Shiny/criminalite/www")
 # save(delits_fr_2016_final,homicide_final,cambriolage_final, file="donnees_criminalite.RData")
 
+
 ### CONTENU DES PAGES
-baccueil <- box(title ="Nos données", status = "info", solidHeader = TRUE, width = 6,
-collapsible = TRUE, align="justify", DT::dataTableOutput("mytable"))
-
-
-bstats_desc <- chartjs(height = "200px") %>% 
-    cjsOptions(animation = list(animateScale = T, animateDelayed=T, animateRotate = FALSE),
-               color = "red") %>%
-    cjsDoughnut(labels = LETTERS[1:4]) %>%
-    cjsSeries(data = c(1:4)) %>% 
-    cjsLegend(position = "bottom")
+## page d'accueil
+baccueil <- fluidPage(
+    box(
+        title ="Présentation des données", 
+        status = "info", 
+        solidHeader = TRUE, 
+        width = 12,
+        collapsible = TRUE, 
+        align="justify",
+        "
+        Primi igitur omnium statuuntur Epigonus et Eusebius ob nominum gentilitatem oppressi. 
+        praediximus enim Montium sub ipso vivendi termino his vocabulis appellatos fabricarum culpasse 
+        tribunos ut adminicula futurae molitioni pollicitos.
+        Haec igitur prima lex amicitiae sanciatur, ut ab amicis honesta petamus, 
+        amicorum causa honesta faciamus, ne exspectemus quidem, dum rogemur; studium semper adsit, 
+        cunctatio absit; consilium vero dare audeamus libere. Plurimum in amicitia amicorum bene suadentium
+        valeat auctoritas, eaque et adhibeatur ad monendum non modo aperte sed etiam acriter, 
+        si res postulabit, et adhibitae pareatur.
+        Illud tamen te esse admonitum volo, primum ut qualis es talem te esse omnes existiment ut, 
+        quantum a rerum turpitudine abes, tantum te a verborum libertate seiungas; 
+        deinde ut ea in alterum ne dicas, quae cum tibi falso responsa sint, erubescas. 
+        Quis est enim, cui via ista non pateat, qui isti aetati atque etiam isti dignitati non possit 
+        quam velit petulanter, etiamsi sine ulla suspicione, at non sine argumento male dicere? 
+        Sed istarum partium culpa est eorum, qui te agere voluerunt; laus pudoris tui, 
+        quod ea te invitum dicere videbamus, ingenii, quod ornate politeque dixisti.
+        "
+    ),
+    box(
+        title ="Nos données", 
+        status = "info", 
+        solidHeader = TRUE, 
+        width = 12,
+        collapsible = TRUE, 
+        align="justify",
+        DT::dataTableOutput("DTtable")
+    )
+)
     
+    
+## page cartographie
+bcarte <- chartjs(height = "200px") %>% 
+    cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
+    cjsDoughnut(labels = LETTERS[1:4]) %>%
+    cjsSeries(data = c(1:4))
+    
+## page statistiques
+## page cartographie
+bstats_desc <- chartjs(height = "200px") %>% 
+    cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
+    cjsDoughnut(labels = LETTERS[1:4]) %>%
+    cjsSeries(data = c(1:4))
 
-bregression <- lapply(1:20, box, width = 12, title = "box")
+## page regression
+bregression <- lapply(1:10, box, width = 12, title = "box")
 
-bsources <- lapply(1:20, box, width = 12, title = "box")
+## page sources
+bsources <- lapply(1:10, box, width = 12, title = "box")
 
 
 ### PAGE
 ui <- dashboardPage(
-    options = list(sidebarExpandOnHover = TRUE),
+    #options = list(sidebarExpandOnHover = FALSE),
     
     ## en-tete de la page
     dashboardHeader(
@@ -47,10 +90,12 @@ ui <- dashboardPage(
                 "Données", tabName = "accueil", icon = icon("folder-open", lib="font-awesome")
             ),
             menuItem(
-                "Statistiques descriptives", tabName = "stats_desc", icon = icon("chart-pie", lib = "font-awesome")
+                "Statistiques", icon = icon("chart-pie", lib = "font-awesome"),
+                menuSubItem(" Carte", tabName = "carte", icon = icon("map-marked-alt", lib="font-awesome")),
+                menuSubItem(" Statistiques", tabName = "stats_desc")
             ),
             menuItem(
-                "Régression", tabName = "regression", icon = icon("chart-line", lib="font-awesome")
+                "Régression", tabName = "regression", icon = icon("line-chart", lib="font-awesome")
             ),
             menuItem(
                 "Sources", tabName = "sources", icon = icon("file")
@@ -59,10 +104,14 @@ ui <- dashboardPage(
     ),
     
     ## contenu des pages
-    dashboardBody( includeCSS("www/style.css"),
+    dashboardBody(
         tabItems(
             # page donnees
             tabItem(tabName = "accueil", baccueil
+            ),
+            
+            # page carte
+            tabItem(tabName = "carte", bcarte
             ),
             
             # page statistiques descriptives
@@ -81,7 +130,7 @@ ui <- dashboardPage(
     
     ## parametres generaux
     dashboardControlbar(
-        collapsed = FALSE,
+        collapsed = TRUE,
         div(class = "p-3", skinSelector()),
         pinned = FALSE
     ),
