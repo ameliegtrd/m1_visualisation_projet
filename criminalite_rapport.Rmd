@@ -44,10 +44,10 @@ Ensuite, nous avons ajouté les marges sur la base complète : une ligne avec le
 
 Dans un dernier temps, nous avons fait la jointure des bases. Nous avons joint la base aux données concernant la population, la pauvreté, le diplôme, l’indice de Gini et le taux de chômage pour chaque département.
 
-
 ```{r library, eval=TRUE, include=TRUE, results='hide', class.source = 'foldable'}
 # Definition du repertoire
-
+getwd()
+setwd("~/Desktop/scolarité/M1 MAS/Semestre 2/Visualisation/Projet/www")
 
 # Definition des librairies dont on a besoin
 load_lib <- c("tidyverse","readxl","lmtest","systemfit","ggcorrplot", "ggpmisc","cowplot","sandwich", "kableExtra", "knitr", "rAmCharts")
@@ -65,11 +65,11 @@ sapply(load_lib,require,character=TRUE)
 ## Donnees sur les délits en France en 2016
 
 # data delits_fr_2016
-readLines("www/delits_fr_2016.csv",2)
+readLines("delits_fr_2016.csv",2)
 # on regarde l'encodage
-guess_encoding("www/delits_fr_2016.csv")
+guess_encoding("delits_fr_2016.csv")
 # on importe
-delits_fr_2016  <- read.csv("www/delits_fr_2016.csv", encoding = "utf-8", fileEncoding = "utf-8", sep=";",dec=".", header = T)
+delits_fr_2016  <- read.csv("delits_fr_2016.csv", encoding = "utf-8", fileEncoding = "utf-8", sep=";",dec=".", header = T)
 # on supprime les 2 premieres colonnes et les delits "Index non utilise" 
 delits_fr_2016 <- delits_fr_2016 %>%  filter(libellé.index != "Index non utilisé") %>%  select(c(-1,-2)) 
 # on renomme les lignes
@@ -80,17 +80,17 @@ delits_fr_2016_2  <- delits_fr_2016  %>% select(-1) %>% t %>% as.data.frame() %>
 # summary(delits_fr_2016_2)
 
 ## Donnees population
-population  <- read_excel("www/donnees.xlsx", sheet ="Population", skip=7, col_names = T)
+population  <- read_excel("donnees.xlsx", sheet ="Population", skip=7, col_names = T)
 population  <- population %>% rename("Departement" = "Code département")
 summary(population)
 
 ## Donnees pauvrete
-pauvrete  <- read_excel("www/donnees.xlsx", sheet ="Pauvrete", skip=4, col_names = T)
+pauvrete  <- read_excel("donnees.xlsx", sheet ="Pauvrete", skip=4, col_names = T)
 pauvrete <- pauvrete %>% select(-2) %>% rename("Departement" = "Code géographique")
 summary(pauvrete)
 
 ## Donnees diplome
-diplome_inital <- read_excel("www/donnees.xlsx", col_names = T,sheet ="Diplome", skip=3)
+diplome_inital <- read_excel("donnees.xlsx", col_names = T,sheet ="Diplome", skip=3)
 diplome_inital <- diplome_inital  %>% rename("Departement" = "Département\r\nen géographie courante") %>% select(c(-1,-3:-6))
 summary(diplome_inital)
 # on regroupe les colonnes
@@ -107,11 +107,11 @@ diplome <- diplome %>% mutate(Total = rowSums(diplome[,2:ncol(diplome)]))
 diplome <- diplome %>% mutate(Part_non_diplome = round((Aucun_diplome/Total)*100,3))
 
 ## Donnees revenu median et indice de Gini
-revenu_median  <- read_excel("www/donnees.xlsx", sheet ="Revenu_median_Gini", skip=4, col_names = T)
+revenu_median  <- read_excel("donnees.xlsx", sheet ="Revenu_median_Gini", skip=4, col_names = T)
 revenu_median <- revenu_median %>% rename("Departement" = "Code géographique") %>% select(-2)
 
 ## Donnees taux de chomage
-taux_chomage  <- read_excel("www/donnees.xlsx", sheet ="Taux_chomage", col_names = T)
+taux_chomage  <- read_excel("donnees.xlsx", sheet ="Taux_chomage", col_names = T)
 # on ne garde que les donnees concernant l'annee 2016
 taux_chomage <- taux_chomage %>% rename("Departement" = "Code") %>% select("Departement","T1_2016","T2_2016","T3_2016","T4_2016")
 # on rajoute le taux de chomage moyen sur l'annee pour chaque departement
@@ -141,3 +141,119 @@ delits_fr_2016_final[97,"Departement"] <- "Tout_departement"
 # pour tous les delits
 criminalite <- delits_fr_2016_final[-nrow(delits_fr_2016_final),] %>% select("Departement", Total_delits=total_delits_par_departement, Salaire_median = "Médiane (€)", Tx_pauvrete_seuil60 = "Taux de pauvreté au seuil de 60% (%)", "Taux_chomage_moyen","Part_non_diplome", Indice_gini = "Indice de Gini",Population="Population municipale") %>% mutate("Nb_delits_100000hab" = (Total_delits/Population)*100000)
 ```
+
+## 2.2 Dictionnaire des données
+
+Voici le dictionnaire des données qui fait référence au vocabulaire commun de l’organisation de notre base.
+
+Champs  | Correspondance | Occurences | Type de données |
+------------- | ------------- | ------------- | ------------- |
+Département  | Numéro de département (France métropolitaine) |{0, ...2A,2B, ..., 95} | Qualitative |
+Total_delits | Nombre de délits violents par département en 2016 | {530, ..., 57 902} | Quantitative discrète |
+Salaire_median | Salaire médian par département en 2016 | {22 272, ...} | Quantitative continue |
+Tx_pauvrete_seuil60 | Taux de pauvreté au seuil de 60% (en%) par département en 2016 |{10.7, 18.9, ...} | Quantitative continue |
+Taux_chomage_moyen | Taux de chômage (en%) par département en 2016 | {7.35, 13.7, ...} | Quantitative continue |
+Part_non_diplome | Part des non ou peu diplômés dans la population non scolarisée de 15 ans ou plus par département en 2016 |{29.2, 38.9, ...} | Quantitative continue  |
+Indice_gini | Indice de Gini (en %), mesure du niveau d’inégalité de la répartition du revenu médian pour la population de chaque département en 2016 | {0.302, 0.262, ...} | Quantitative continue |
+Population | Nombre d’habitants par département en 2016 | {655 171, ...} | Quantitative discrète |
+Nb_delits_100000hab | Nombre de délits violents pour 100 000 habitants par département en 2016 | {3936.744, ...} | Quantitative discrète |
+
+# 3. L'application Shiny
+
+## 3.1 Présentation de l'application
+
+Notre application comporte 4 parties : 
+
+- **Données** : Présentation de la base de données et affichage de la table. 
+
+- **Statistiques descriptives** : Cette partie comporte deux onglets. 
+  - **Premier onglet** : Il permet de choisir le type de criminalité, et d'afficher par département le nombre total de crime. Il fait de même pour 100 000 habitants. Il présente aussi des boxplots et des tableaux contenant des statistiques telles que la moyenne, la médiane, etc. 
+  - **Second onglet** : Il permet de choisir un département et d'afficher un "pie graph" avec les pourcentages de chaque type de crime. L'utilisateur aura aussi la possibilité de comparer deux départements. 
+
+- **Régression** : L'utilisateur aura le choix des variables de la regression. Affichage d'un box qui interpréte les résultats de la régression. 
+
+- **Sources** : Liens des différents sites internet dont nous nous sommes servies pour développer notre application.  
+
+## 3.2 Développement de l'application et difficultés rencontrées
+
+Pour construire notre application, nous avons
+
+Quand la navigation est en petit, afficher Crime
+ 
+L'utilisateur aura le choix des variables de la regression. Un message "pop-up" s'affichera pour avertir l'utilisateur de la non fiabilité des résultats et de la non fiabilité des résultats et pourquoi (auto-corrélation ect) + box qui interpréte les résultats de la régression.
+
+*à supprimer*
+Ex d'un dashboard
+https://adminlte.io/themes/AdminLTE/index2.html
+
+Pour en savoir plus sur la création d'une application [Shiny - RStudio](https://shiny.rstudio.com)
+
+# 4. Quelques statistiques
+
+## 4.1 Statistiques univariées
+
+Commençons par faire des statistiques univariées. A l’aide de boites à moustaches, nous allons étudier la distribution du nombre de délits pour 100 000 habitants en France métropolitaine en 2016 par département.
+
+```{r}
+# Boxplot du nombre total de delits
+amBoxplot(criminalite$Nb_delits_100000hab, xlab="", ylab="Nombre de délits", main="Boxplot du nombre de délits en France métropolitaine en 2016")
+criminalite$Nb_delits_100000hab %>% summary()
+
+# Top des 10 departements qui ont le plus de delits
+criminalite %>% slice_max(Nb_delits_100000hab,n=10) %>% select("Departement","Nb_delits_100000hab") %>% View()
+```
+
+La moitié des départements recensent moins de 4 373 délits pour 100 000 habitants et 75% des départements ont un nombre de délits inférieur à 5 268 pour 100 000 habitants. Parmi les 25% ayant un nombre de délit supérieur à 5 268, plusieurs départements présentent des valeurs considérées comme atypiques. 
+Par ailleurs, il n’y a aucune valeur atypique en dessous de la boite à moustache.
+
+Voici le tableau des 10 departements qui ont le plus de delits pour 100 000 habitants :
+
+Département  | Nb_delits_100000hab | 
+------------- | ------------- | 
+75 |  12 403 | 
+75 |  12 403 | 
+75 |  12 403 | 
+75 |  12 403 | 
+75 |  12 403 | 
+75 |  12 403 | 
+75 |  12 403 | 
+75 |  12 403 | 
+75 |  12 403 | 
+75 |  12 403 | 
+
+Le département de la Seine (75) compte 12 403 délits pour 100 000 habitants en 2016. C'est le département qui compte le plus de délits pour 100 000 habitants.
+
+## 4.2 Statistiques bivariées
+```{r}
+## nuage de points entre criminalite et taux de pauvrete
+my.formula <- y ~ x
+htp <- ggplot(criminalite, aes(x = Nb_delits_100000hab, y = Tx_pauvrete_seuil60, label=Tx_pauvrete_seuil60)) + geom_smooth(method=lm, se=F, formula = my.formula) + stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) + geom_point() 
+
+## nuage de points entre criminalite et part de non diplomes
+hpnd <- ggplot(criminalite, aes(x = Nb_delits_100000hab, y = Part_non_diplome, label = Part_non_diplome)) + geom_smooth(method=lm, se=F, formula = my.formula) +  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + geom_point() 
+
+## nuage de points entre criminalite et indice de Gini
+hig <- ggplot(criminalite, aes(x = Nb_delits_100000hab, y = Indice_gini, label=Indice_gini))  +  geom_smooth(method=lm, se=F, formula = my.formula) + stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + geom_point()
+
+## nuage de points entre criminalite et taux chomage moyen
+htcm <- ggplot(criminalite, aes(x = Nb_delits_100000hab, y = Taux_chomage_moyen, label=Indice_gini))  +  geom_smooth(method=lm, se=F, formula = my.formula) + stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + geom_point()
+
+# les 4 graphes sur la meme fenetre
+plot_grid(htp, hpnd, hig, htcm, ncol = 2, nrow = 2)
+
+## correlation
+myvars <- c("Nb_delits_100000hab","Salaire_median","Tx_pauvrete_seuil60","Taux_chomage_moyen","Part_non_diplome","Indice_gini")
+matcorr <- criminalite[,myvars]
+mcor <- cor(matcorr)
+# graphe correlation
+ggcorrplot(mcor, hc.order = TRUE, type = "lower",
+           lab = T,
+           outline.col = "white",
+           ggtheme = ggplot2::theme_gray,
+           colors = c("#6D9EC1", "white", "#E46726"))
+```
+**Graphique :** A priori, il y a corrélation positive entre l'indice de Gini et le nombre de délits pour 100 000 habitants car la pente de la droite de régression est clairement positive.
+**Corrplot :** Il existe une relation fortement positive entre le nombre délits pour 100 000 habitants et l'indice Gini (0.78). Il y a aussi une relation positive élevée entre le taux de pauvreté (au seuil de 60%) et le taux de chômage moyen (0.76) 
+
+
+ainsi qu'entre le taux de pauvreté et la part de non diplômés (0.62). A l'inverse, relation négative entre le salaire médian et la part de non diplômés (-0.78). Attention, le graphe de corrélation ne permet pas d'affirmer un lien de causalité entre les variables. Les indicateurs de corrélations aident à formaliser le modèle mais on ne peut pas parler de lien de causalité. 
