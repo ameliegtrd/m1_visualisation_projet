@@ -46,8 +46,8 @@ Dans un dernier temps, nous avons fait la jointure des bases. Nous avons joint l
 
 ```{r library, eval=TRUE, include=TRUE, results='hide', class.source = 'foldable'}
 # Definition du repertoire
-getwd()
-setwd("~/Desktop/scolarité/M1 MAS/Semestre 2/Visualisation/Projet/www")
+# getwd()
+# setwd("~/Desktop/scolarité/M1 MAS/Semestre 2/Visualisation/Projet/www")
 
 # Definition des librairies dont on a besoin
 load_lib <- c("tidyverse","readxl","lmtest","systemfit","ggcorrplot", "ggpmisc","cowplot","sandwich", "kableExtra", "knitr", "rAmCharts")
@@ -65,33 +65,40 @@ sapply(load_lib,require,character=TRUE)
 ## Donnees sur les délits en France en 2016
 
 # data delits_fr_2016
-readLines("delits_fr_2016.csv",2)
+readLines("www/delits_fr_2016.csv",2)
 # on regarde l'encodage
-guess_encoding("delits_fr_2016.csv")
+guess_encoding("www/delits_fr_2016.csv")
 # on importe
-delits_fr_2016  <- read.csv("delits_fr_2016.csv", encoding = "utf-8", fileEncoding = "utf-8", sep=";",dec=".", header = T)
+delits_fr_2016  <- read.csv("www/delits_fr_2016.csv", encoding = "utf-8", fileEncoding = "utf-8", sep=";",dec=".", header = T)
 # on supprime les 2 premieres colonnes et les delits "Index non utilise" 
-delits_fr_2016 <- delits_fr_2016 %>%  filter(libellé.index != "Index non utilisé") %>%  select(c(-1,-2)) 
+delits_fr_2016 <- delits_fr_2016 %>%  
+  filter(libellé.index != "Index non utilisé") %>%  
+  select(c(-1,-2)) 
 # on renomme les lignes
 rownames(delits_fr_2016) <- delits_fr_2016[,1]
 # on transpose et on ajoute une colonne departement
 departement=c("01","02","03","04","05","06","07","08","09",10:19,"2A","2B",21:95)
-delits_fr_2016_2  <- delits_fr_2016  %>% select(-1) %>% t %>% as.data.frame() %>% mutate("Departement" = departement) %>% relocate("Departement", .before = 1)
+delits_fr_2016_2  <- delits_fr_2016  %>% 
+  select(-1) %>% t %>% as.data.frame() %>% 
+  mutate("Departement" = departement) %>% 
+  relocate("Departement", .before = 1)
 # summary(delits_fr_2016_2)
 
 ## Donnees population
-population  <- read_excel("donnees.xlsx", sheet ="Population", skip=7, col_names = T)
+population  <- read_excel("www/donnees.xlsx", sheet ="Population", skip=7, col_names = T)
 population  <- population %>% rename("Departement" = "Code département")
 summary(population)
 
 ## Donnees pauvrete
-pauvrete  <- read_excel("donnees.xlsx", sheet ="Pauvrete", skip=4, col_names = T)
+pauvrete  <- read_excel("www/donnees.xlsx", sheet ="Pauvrete", skip=4, col_names = T)
 pauvrete <- pauvrete %>% select(-2) %>% rename("Departement" = "Code géographique")
 summary(pauvrete)
 
 ## Donnees diplome
-diplome_inital <- read_excel("donnees.xlsx", col_names = T,sheet ="Diplome", skip=3)
-diplome_inital <- diplome_inital  %>% rename("Departement" = "Département\r\nen géographie courante") %>% select(c(-1,-3:-6))
+diplome_inital <- read_excel("www/donnees.xlsx", col_names = T,sheet ="Diplome", skip=3)
+diplome_inital <- diplome_inital  %>% 
+  rename("Departement" = "Département\r\nen géographie courante") %>% 
+  select(c(-1,-3:-6))
 summary(diplome_inital)
 # on regroupe les colonnes
 Aucun_diplome = pull(round(diplome_inital[,2] + diplome_inital[,3] + diplome_inital[,4] + diplome_inital[,5]))
@@ -100,18 +107,25 @@ Niveau_BAC = pull(round(diplome_inital[,9] + diplome_inital[,10] + diplome_inita
 Etudes_sup = pull(round(diplome_inital[,13] + diplome_inital[,14] + diplome_inital[,15] + diplome_inital[,16]))
 diplome = tibble(Departement = pull(diplome_inital[,"Departement"]),Aucun_diplome = Aucun_diplome, Niveau_CAP_BEP = Niveau_CAP_BEP, Niveau_BAC = Niveau_BAC, Etudes_sup = Etudes_sup)
 # on regroupe par departement
-diplome <- diplome %>% group_by(Departement) %>% summarise(Aucun_diplome = sum(Aucun_diplome, na.rm=T),Niveau_CAP_BEP = sum(Niveau_CAP_BEP, na.rm=T),Niveau_BAC =sum(Niveau_BAC, na.rm = T) ,Etudes_sup = sum(Etudes_sup, na.rm = T)) 
+diplome <- diplome %>% 
+  group_by(Departement) %>% 
+  summarise(
+    Aucun_diplome = sum(Aucun_diplome, na.rm=T),
+    Niveau_CAP_BEP = sum(Niveau_CAP_BEP, na.rm=T),
+    Niveau_BAC =sum(Niveau_BAC, na.rm = T),
+    Etudes_sup = sum(Etudes_sup, na.rm = T)
+  ) 
 # on ajoute pour chaque departement la "population" totale (relative aux donnees)
 diplome <- diplome %>% mutate(Total = rowSums(diplome[,2:ncol(diplome)]))
 # on ajoute le pourcentage de diplomes et de non diplomes pour chaque departement
 diplome <- diplome %>% mutate(Part_non_diplome = round((Aucun_diplome/Total)*100,3))
 
 ## Donnees revenu median et indice de Gini
-revenu_median  <- read_excel("donnees.xlsx", sheet ="Revenu_median_Gini", skip=4, col_names = T)
+revenu_median  <- read_excel("www/donnees.xlsx", sheet ="Revenu_median_Gini", skip=4, col_names = T)
 revenu_median <- revenu_median %>% rename("Departement" = "Code géographique") %>% select(-2)
 
 ## Donnees taux de chomage
-taux_chomage  <- read_excel("donnees.xlsx", sheet ="Taux_chomage", col_names = T)
+taux_chomage  <- read_excel("www/donnees.xlsx", sheet ="Taux_chomage", col_names = T)
 # on ne garde que les donnees concernant l'annee 2016
 taux_chomage <- taux_chomage %>% rename("Departement" = "Code") %>% select("Departement","T1_2016","T2_2016","T3_2016","T4_2016")
 # on rajoute le taux de chomage moyen sur l'annee pour chaque departement
@@ -119,7 +133,7 @@ taux_chomage <- taux_chomage %>% mutate(Taux_chomage_moyen = (T1_2016+T2_2016+T3
 
 ## Donnees manquantes ?
 # on regarde s'il y a des donnees manquantes
-delits_fr_2016_2 %>% summarise_all(~ sum(is.na(.))) %>% View() # pour chaque colonne
+delits_fr_2016_2 %>% summarise_all(~ sum(is.na(.))) # pour chaque colonne
 delits_fr_2016_2 %>% map_df(~sum(is.na(.))) %>% rowSums() # au total
 # aucune valeur manquante
 
@@ -133,13 +147,21 @@ rm(Aucun_diplome,departement,Etudes_sup,install_lib,lib,load_lib,Niveau_BAC,Nive
 
 ## Jointure des bases
 # On joint a la base "delits_fr_2016_2" les donnees concernant la population, la pauvrete, le diplome, la revenu median et le taux de chomage pour chaque departement
-delits_fr_2016_final <- delits_fr_2016_2 %>% left_join(y = population,by="Departement") %>% left_join(y=pauvrete, by="Departement") %>% left_join(y=diplome, by="Departement") %>% left_join(y=revenu_median, by="Departement") %>% left_join(y=taux_chomage, by="Departement")
+delits_fr_2016_final <- delits_fr_2016_2 %>% 
+  left_join(y = population,by="Departement") %>% 
+  left_join(y=pauvrete, by="Departement") %>% 
+  left_join(y=diplome, by="Departement") %>% 
+  left_join(y=revenu_median, by="Departement") %>% 
+  left_join(y=taux_chomage, by="Departement")
+
 delits_fr_2016_final[97,"Departement"] <- "Tout_departement"
 
 ## Creation base finale
 # on cree notre base finale, avec uniquement les variables qu'on souhaite utiliser et on rajoute une colonne qui correspond au nombre de délits pour 100 000 habitants
 # pour tous les delits
-criminalite <- delits_fr_2016_final[-nrow(delits_fr_2016_final),] %>% select("Departement", Total_delits=total_delits_par_departement, Salaire_median = "Médiane (€)", Tx_pauvrete_seuil60 = "Taux de pauvreté au seuil de 60% (%)", "Taux_chomage_moyen","Part_non_diplome", Indice_gini = "Indice de Gini",Population="Population municipale") %>% mutate("Nb_delits_100000hab" = (Total_delits/Population)*100000)
+criminalite <- delits_fr_2016_final[-nrow(delits_fr_2016_final),] %>% 
+  select("Departement", Total_delits=total_delits_par_departement, Salaire_median = "Médiane (€)", Tx_pauvrete_seuil60 = "Taux de pauvreté au seuil de 60% (%)", "Taux_chomage_moyen","Part_non_diplome", Indice_gini = "Indice de Gini",Population="Population municipale") %>% 
+  mutate("Nb_delits_100000hab" = (Total_delits/Population)*100000)
 ```
 
 ## 2.2 Dictionnaire des données
@@ -198,28 +220,19 @@ Commençons par faire des statistiques univariées. A l’aide de boites à mous
 # Boxplot du nombre total de delits
 amBoxplot(criminalite$Nb_delits_100000hab, xlab="", ylab="Nombre de délits", main="Boxplot du nombre de délits en France métropolitaine en 2016")
 criminalite$Nb_delits_100000hab %>% summary()
-
-# Top des 10 departements qui ont le plus de delits
-criminalite %>% slice_max(Nb_delits_100000hab,n=10) %>% select("Departement","Nb_delits_100000hab") %>% View()
 ```
 
 La moitié des départements recensent moins de 4 373 délits pour 100 000 habitants et 75% des départements ont un nombre de délits inférieur à 5 268 pour 100 000 habitants. Parmi les 25% ayant un nombre de délit supérieur à 5 268, plusieurs départements présentent des valeurs considérées comme atypiques. 
-Par ailleurs, il n’y a aucune valeur atypique en dessous de la boite à moustache.
+Par ailleurs, il n’y a aucune valeur atypique en dessous de la boite à moustache.  
 
 Voici le tableau des 10 departements qui ont le plus de delits pour 100 000 habitants :
 
-Département  | Nb_delits_100000hab | 
-------------- | ------------- | 
-75 |  12 403 | 
-75 |  12 403 | 
-75 |  12 403 | 
-75 |  12 403 | 
-75 |  12 403 | 
-75 |  12 403 | 
-75 |  12 403 | 
-75 |  12 403 | 
-75 |  12 403 | 
-75 |  12 403 | 
+```{r echo=TRUE, results='asis'}
+# Top des 10 departements qui ont le plus de delits
+knitr::kable(criminalite %>% slice_max(Nb_delits_100000hab,n=10) %>% select("Departement","Nb_delits_100000hab")) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
 
 Le département de la Seine (75) compte 12 403 délits pour 100 000 habitants en 2016. C'est le département qui compte le plus de délits pour 100 000 habitants.
 
@@ -252,8 +265,5 @@ ggcorrplot(mcor, hc.order = TRUE, type = "lower",
            ggtheme = ggplot2::theme_gray,
            colors = c("#6D9EC1", "white", "#E46726"))
 ```
-**Graphique :** A priori, il y a corrélation positive entre l'indice de Gini et le nombre de délits pour 100 000 habitants car la pente de la droite de régression est clairement positive.
-**Corrplot :** Il existe une relation fortement positive entre le nombre délits pour 100 000 habitants et l'indice Gini (0.78). Il y a aussi une relation positive élevée entre le taux de pauvreté (au seuil de 60%) et le taux de chômage moyen (0.76) 
-
-
-ainsi qu'entre le taux de pauvreté et la part de non diplômés (0.62). A l'inverse, relation négative entre le salaire médian et la part de non diplômés (-0.78). Attention, le graphe de corrélation ne permet pas d'affirmer un lien de causalité entre les variables. Les indicateurs de corrélations aident à formaliser le modèle mais on ne peut pas parler de lien de causalité. 
+**Graphique :** A priori, il y a corrélation positive entre l'indice de Gini et le nombre de délits pour 100 000 habitants car la pente de la droite de régression est clairement positive.  
+**Corrplot :** Il existe une relation fortement positive entre le nombre délits pour 100 000 habitants et l'indice Gini (0.78). Il y a aussi une relation positive élevée entre le taux de pauvreté (au seuil de 60%) et le taux de chômage moyen (0.76) ainsi qu'entre le taux de pauvreté et la part de non diplômés (0.62). A l'inverse, relation négative entre le salaire médian et la part de non diplômés (-0.78). **Attention, le graphe de corrélation ne permet pas d'affirmer un lien de causalité entre les variables.** Les indicateurs de corrélations aident à formaliser le modèle mais on ne peut pas parler de lien de causalité. 
