@@ -45,6 +45,14 @@ baccueil <- fluidPage(
         width = 12,
         collapsible = TRUE, 
         align="justify",
+        selectInput("which_data", 
+                    "Sélectionne la table que tu souhaites voir", 
+                    choices = c("Tout" = "delits_fr_2016_final",
+                                "Criminalité" = "criminalite",
+                                "Cambriolage" = "criminalite_cambriolage",
+                                "Homicide" = "criminalite_homicide"),
+                    selected = "data 1"
+        ),
         DT::dataTableOutput("DTtable")
     )
 )
@@ -57,20 +65,23 @@ bcarte <- chartjs(height = "200px") %>%
     cjsSeries(data = c(1:4))
     
 ## page statistiques
-## page cartographie
 bstats_desc <- chartjs(height = "200px") %>% 
     cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
     cjsDoughnut(labels = LETTERS[1:4]) %>%
     cjsSeries(data = c(1:4))
 
 ## page regression
-bregression <- lapply(1:10, box, width = 12, title = "box")
+bregression <- lapply(getAdminLTEColors(), function(color) {
+    box(status = color)
+})
 
 ## page sources
-bsources <- lapply(1:10, box, width = 12, title = "box")
+bsources <- lapply(getAdminLTEColors(), function(color) {
+    box(status = color)
+})
 
 
-### PAGE
+### UI
 ui <- dashboardPage(
     #options = list(sidebarExpandOnHover = FALSE),
     

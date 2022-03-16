@@ -1,0 +1,513 @@
+---
+title: "traitements_donnees"
+author: "Amélie GOUTARD"
+date: "3/16/2022"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Librairies
+```{r library, eval=TRUE, include=TRUE, results='hide', class.source = 'foldable'}
+# definition du repertoire
+# getwd()
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+# definition des librairies dont on a besoin
+load_lib <- c("tidyverse","readxl","lmtest","systemfit","ggcorrplot", "ggpmisc","cowplot","sandwich")
+
+# packages necessaires qui ne sont pas installes
+install_lib <- load_lib[!load_lib %in% installed.packages()] 
+# installation des packages manquants
+for (lib in install_lib) install.packages(lib,dependencies=TRUE) 
+# chargement des packages
+sapply(load_lib,require,character=TRUE)
+```
+
+## Importation des données
+### Données sur les délits en France en 2016
+```{r}
+## data delits_fr_2016
+readLines("www/delits_fr_2016.csv",2)
+# on regarde l'encodage
+guess_encoding("www/delits_fr_2016.csv")
+# on importe
+delits_fr_2016  <- read.csv("www/delits_fr_2016.csv", encoding = "utf-8", fileEncoding = "utf-8", sep=";",dec=".", header = T)
+# on supprime les 2 premieres colonnes et les delits "Index non utilise" 
+delits_fr_2016 <- delits_fr_2016 %>%  filter(libellé.index != "Index non utilisé") %>%  select(c(-1,-2)) 
+# on renomme les lignes
+rownames(delits_fr_2016) <- delits_fr_2016[,1]
+# on transpose et on ajoute une colonne departement
+departement=c("01","02","03","04","05","06","07","08","09",10:19,"2A","2B",21:95)
+delits_fr_2016_2  <- delits_fr_2016  %>% 
+  select(-1) %>%
+  t %>%
+  as.data.frame() %>%
+  mutate("Departement" = departement) %>% 
+  relocate("Departement", .before = 1)
+
+```
+
+### Données population
+```{r}
+## on importe
+population  <- read_excel("www/donnees.xlsx", sheet ="Population", skip=7, col_names = T)
+population  <- population %>% rename("Departement" = "Code département")
+summary(population)
+```
+
+### Données pauvreté
+```{r}
+## on importe
+pauvrete  <- read_excel("www/donnees.xlsx", sheet ="Pauvrete", skip=4, col_names = T)
+pauvrete <- pauvrete %>% 
+  select(-2) %>% 
+  rename("Departement" = "Code géographique")
+summary(pauvrete)
+```
+
+### Données diplôme
+```{r}
+## on importe
+diplome_inital <- read_excel("www/donnees.xlsx", col_names = T,sheet ="Diplome", skip=3)
+diplome_inital <- diplome_inital  %>% 
+  rename("Departement" = "Département\r\nen géographie courante") %>% 
+  select(c(-1,-3:-6))
+summary(diplome_inital)
+
+## on regroupe les colonnes
+Aucun_diplome = pull(round(diplome_inital[,2] + diplome_inital[,3] + diplome_inital[,4] + diplome_inital[,5]))
+Niveau_CAP_BEP = pull(round(diplome_inital[,5] + diplome_inital[,6] + diplome_inital[,7] + diplome_inital[,8]))
+Niveau_BAC = pull(round(diplome_inital[,9] + diplome_inital[,10] + diplome_inital[,11] + diplome_inital[,12]))
+Etudes_sup = pull(round(diplome_inital[,13] + diplome_inital[,14] + diplome_inital[,15] + diplome_inital[,16]))
+diplome = tibble(Departement = pull(diplome_inital[,"Departement"]),Aucun_diplome = Aucun_diplome, Niveau_CAP_BEP = Niveau_CAP_BEP, Niveau_BAC = Niveau_BAC, Etudes_sup = Etudes_sup)
+
+## on regroupe par departement
+diplome <- diplome %>% 
+  group_by(Departement) %>% 
+  summarise(
+    Aucun_diplome = sum(Aucun_diplome, na.rm=T),
+    Niveau_CAP_BEP = sum(Niveau_CAP_BEP, na.rm=T),
+    Niveau_BAC =sum(Niveau_BAC, na.rm = T),
+    Etudes_sup = sum(Etudes_sup, na.rm = T)
+  ) 
+# on ajoute pour chaque departement la "population" totale (relative aux donnees)
+diplome <- diplome %>% mutate(Total = rowSums(diplome[,2:ncol(diplome)]))
+# on ajoute le pourcentage de diplomes et de non diplomes pour chaque departement
+diplome <- diplome %>% mutate(Part_non_diplome = round((Aucun_diplome/Total)*100,3))
+```
+
+### Données revenu médian et indice de Gini
+```{r}
+## on importe
+revenu_median  <- read_excel("www/donnees.xlsx", sheet ="Revenu_median_Gini", skip=4, col_names = T)
+revenu_median <- revenu_median %>% 
+  rename("Departement" = "Code géographique") %>% 
+  select(-2)
+
+```
+
+
+### Données taux chômage
+```{r}
+## on importe
+taux_chomage  <- read_excel("www/donnees.xlsx", sheet ="Taux_chomage", col_names = T)
+# on ne garde que les donnees concernant l'annee 2016
+taux_chomage <- taux_chomage %>% 
+  rename("Departement" = "Code") %>% 
+  select("Departement","T1_2016","T2_2016","T3_2016","T4_2016")
+# on rajoute le taux de chomage moyen sur l'annee pour chaque departement
+taux_chomage <- taux_chomage %>% mutate(Taux_chomage_moyen = (T1_2016+T2_2016+T3_2016+T4_2016)/4)
+
+```
+
+
+## Sélection des délits
+```{r}
+### on regarde s'il y a des donnees manquantes
+delits_fr_2016_2 %>% summarise_all(~ sum(is.na(.)))  # pour chaque colonne
+delits_fr_2016_2 %>% map_df(~sum(is.na(.))) %>% rowSums() # au total
+# aucune valeur manquante
+
+### on cree differentes bases pour chaque type de delits
+## Base homicide
+# Cette base regroupe les categories : 
+# - Reglements de comptes entre malfaiteurs
+# - Homicides pour voler et a l’occasion de vols
+# - Homicides pour d’autres motifs
+# - Coups et blessures volontaires suivis de mort
+homicide <- delits_fr_2016_2 %>% select(1:4,7) 
+homicide$Total_homicides = rowSums(homicide[,2:ncol(homicide)])
+
+## Base cambriolage
+# Cette base regroupe les categories : 
+# - Cambriolages de locaux d'habitations principales
+# - Cambriolages de residences secondaires
+cambriolage <- delits_fr_2016_2 %>% select(1,28:29)
+cambriolage$Total_cambriolage = rowSums(cambriolage[,2:ncol(cambriolage)])
+
+### On ajoute les marges sur la base complete (avec tous les delits)
+## on ajoute une ligne qui, pour chaque type de delit, compte le nombre de delits tout departement confondu
+delits_fr_2016_2["total_delits_par_type_delit",] <- c(NA,colSums(delits_fr_2016_2[,2:ncol(delits_fr_2016_2)]))
+## on ajoute une colonne qui pour chaque departement compte le nombre de delits commis
+delits_fr_2016_2 <- delits_fr_2016_2 %>% mutate(total_delits_par_departement = rowSums(delits_fr_2016_2[,2:ncol(delits_fr_2016_2)]))
+
+### On supprime les objets dont on n'a plus besoin
+rm(Aucun_diplome,departement,Etudes_sup,install_lib,lib,load_lib,Niveau_BAC,Niveau_CAP_BEP)
+
+```
+
+## Jointures des bases
+```{r}
+## On joint a la base "delits_fr_2016_2" les donnees concernant la population, la pauvrete, le diplome, la revenu median et le taux de chomage pour chaque departement
+delits_fr_2016_final <- delits_fr_2016_2 %>% 
+  left_join(y = population,by="Departement") %>% 
+  left_join(y=pauvrete, by="Departement") %>% 
+  left_join(y=diplome, by="Departement") %>% 
+  left_join(y=revenu_median, by="Departement") %>% 
+  left_join(y=taux_chomage, by="Departement")
+
+delits_fr_2016_final[97,"Departement"] <- "Tout_departement"
+
+## Idem pour la base homicide
+homicide_final <- homicide %>% 
+  left_join(y = population,by="Departement") %>% 
+  left_join(y=pauvrete, by="Departement") %>% 
+  left_join(y=diplome, by="Departement") %>% 
+  left_join(y=revenu_median, by="Departement") %>% 
+  left_join(y=taux_chomage, by="Departement")
+
+## Idem pour la base cambriolage
+cambriolage_final <- cambriolage %>% 
+  left_join(y = population,by="Departement") %>% 
+  left_join(y=pauvrete, by="Departement") %>% 
+  left_join(y=diplome, by="Departement") %>% 
+  left_join(y=revenu_median, by="Departement") %>% 
+  left_join(y=taux_chomage, by="Departement")
+
+```
+
+
+## Statistiques descriptives
+### Creation des bases finales
+```{r}
+## on cree nos bases finales, avec uniquement les variables qu'on souhaite utiliser et on rajoute une colonne qui correspond au nombre de délits pour 100 000 habitants
+# pour tous les delits
+criminalite <- delits_fr_2016_final[-nrow(delits_fr_2016_final),] %>% select("Departement", Total_delits=total_delits_par_departement, Salaire_median = "Médiane (€)", Tx_pauvrete_seuil60 = "Taux de pauvreté au seuil de 60% (%)", "Taux_chomage_moyen","Part_non_diplome", Indice_gini = "Indice de Gini",Population="Population municipale") %>% mutate("Nb_delits_100000hab" = (Total_delits/Population)*100000)
+
+# pour homicide
+criminalite_homicide <- homicide_final %>% select("Departement", Total_delits=Total_homicides, Salaire_median = "Médiane (€)", Tx_pauvrete_seuil60 = "Taux de pauvreté au seuil de 60% (%)", "Taux_chomage_moyen","Part_non_diplome", Indice_gini = "Indice de Gini",Population="Population municipale") %>% mutate("Nb_delits_100000hab" = (Total_delits/Population)*100000)
+
+# pour cambriolage
+criminalite_cambriolage <- cambriolage_final %>% select("Departement", Total_delits=Total_cambriolage, Salaire_median = "Médiane (€)", Tx_pauvrete_seuil60 = "Taux de pauvreté au seuil de 60% (%)", "Taux_chomage_moyen","Part_non_diplome", Indice_gini = "Indice de Gini",Population="Population municipale") %>% mutate("Nb_delits_100000hab" = (Total_delits/Population)*100000)
+
+```
+
+
+### Statistiques univariées
+```{r}
+## boxplot du nombre total de delits
+ggplot(criminalite) + aes(x="", y=Nb_delits_100000hab) + 
+  geom_boxplot() + 
+  ggtitle("Boxplot du nombre de délits en France métropolitaine en 2016") + 
+  xlab("") + 
+  ylab("Nombre de délits")
+summary(criminalite$Nb_delits_100000hab)
+# pour homicide
+ggplot(criminalite_homicide) + 
+  aes(x="", y=Nb_delits_100000hab) + 
+  geom_boxplot() + 
+  ggtitle("Boxplot du nombre d'homicides en France métropolitaine en 2016") + 
+  xlab("") + 
+  ylab("Nombre d'homicides") 
+summary(criminalite_homicide$Nb_delits_100000hab)
+# pour cambriolage
+ggplot(criminalite_cambriolage) + 
+  aes(x="", y=Nb_delits_100000hab) + 
+  geom_boxplot() + 
+  ggtitle("Boxplot du nombre de cambriolages en France métropolitaine en 2016") + 
+  xlab("") + 
+  ylab("Nombre de cambriolages")
+summary(criminalite_cambriolage$Nb_delits_100000hab)
+
+## top des 10 departements qui ont le plus d'homicides
+criminalite_homicide %>% 
+  slice_max(Nb_delits_100000hab,n=10) %>% 
+  select("Departement","Nb_delits_100000hab") #%>% View()
+
+## top des 10 departements qui ont le plus de cambriolages
+criminalite_cambriolage %>% 
+  slice_max(Nb_delits_100000hab,n=10) %>%
+  select("Departement","Nb_delits_100000hab") #%>% View()
+
+```
+
+
+### Statistiques bivariées
+```{r}
+### pour homicide
+## nuage de points entre homicide et taux de pauvrete
+my.formula <- y ~ x
+htp <- ggplot(criminalite_homicide, aes(x = Nb_delits_100000hab, y = Tx_pauvrete_seuil60, label=Tx_pauvrete_seuil60)) + 
+  geom_smooth(method=lm, se=F, formula = my.formula) + 
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) + 
+  geom_point() 
+
+## nuage de points entre homicide et part de non diplomes
+hpnd <- ggplot(criminalite_homicide, aes(x = Nb_delits_100000hab, y = Part_non_diplome, label = Part_non_diplome)) + 
+  geom_smooth(method=lm, se=F, formula = my.formula) +  
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + 
+  geom_point() 
+
+## nuage de points entre homicide et indice de Gini
+hig <- ggplot(criminalite_homicide, aes(x = Nb_delits_100000hab, y = Indice_gini, label=Indice_gini))  +  
+  geom_smooth(method=lm, se=F, formula = my.formula) + 
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + 
+  geom_point()
+
+## nuage de points entre homicide et taux chomage moyen
+htcm <- ggplot(criminalite_homicide, aes(x = Nb_delits_100000hab, y = Taux_chomage_moyen, label=Indice_gini))  +  
+  geom_smooth(method=lm, se=F, formula = my.formula) + 
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + 
+  geom_point()
+
+# les 3 graphes sur la meme fenetre
+plot_grid(htp, hpnd, hig, htcm, ncol = 2, nrow = 2)
+
+## correlation
+myvars <- c("Nb_delits_100000hab","Salaire_median","Tx_pauvrete_seuil60","Taux_chomage_moyen","Part_non_diplome","Indice_gini")
+matcorr <- criminalite_homicide[,myvars]
+mcor <- cor(matcorr)
+# graphe correlation
+ggcorrplot(mcor, hc.order = TRUE, type = "lower",
+           lab = T,
+           outline.col = "white",
+           ggtheme = ggplot2::theme_gray,
+           colors = c("#6D9EC1", "white", "#E46726"))
+
+### pour cambriolage
+## nuage de points entre cambriolage et taux de pauvrete
+my.formula <- y ~ x
+ctp <- ggplot(criminalite_cambriolage, aes(x = Nb_delits_100000hab, y = Tx_pauvrete_seuil60, label=Tx_pauvrete_seuil60)) + 
+  geom_smooth(method=lm, se=F, formula = my.formula) + 
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) + 
+  geom_point() 
+
+## nuage de points entre cambriolage et part de non diplomes
+cpnd <- ggplot(criminalite_cambriolage, aes(x = Nb_delits_100000hab, y = Part_non_diplome, label = Part_non_diplome)) + 
+  geom_smooth(method=lm, se=F, formula = my.formula) +  
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + 
+  geom_point() 
+
+## nuage de points entre cambriolage et indice de Gini
+cig <- ggplot(criminalite_cambriolage, aes(x = Nb_delits_100000hab, y = Indice_gini, label=Indice_gini))  +  
+  geom_smooth(method=lm, se=F, formula = my.formula) + 
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + 
+  geom_point()
+
+## nuage de points entre cambriolage et taux chomage moyen
+ctcm <- ggplot(criminalite_homicide, aes(x = Nb_delits_100000hab, y = Taux_chomage_moyen, label=Indice_gini))  +  
+  geom_smooth(method=lm, se=F, formula = my.formula) + 
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + 
+  geom_point()
+
+# les 3 graphes sur la meme fenetre
+plot_grid(ctp, cpnd, cig, ctcm, ncol = 2, nrow = 2)
+
+## correlation
+myvars <- c("Nb_delits_100000hab","Salaire_median","Tx_pauvrete_seuil60","Taux_chomage_moyen","Part_non_diplome","Indice_gini")
+matcorr <- criminalite_cambriolage[,myvars]
+mcor <- cor(matcorr)
+# graphe correlation
+ggcorrplot(mcor, hc.order = TRUE, type = "lower",
+           lab = T,
+           outline.col = "white",
+           ggtheme = ggplot2::theme_gray,
+           colors = c("#6D9EC1", "white", "#E46726"))
+
+
+```
+**Graphique :** A priori, il y a corrélation positive entre l'indice de Gini et le nombre d'homicide car la pente de la droite de régression est clairement positive.  De même, il semble y avoir une faible corrélation positive entre le taux de chômage moyen et le nombre de cambriolage.
+**Corrplot :** Relation positive entre le nombre d'homicides et l'indice Gini (0.35). De même, il y a une relation positive entre le nombre de cambriolage et l'indice de Gini (0.43) ainsi qu'avec le taux de chômage moyen (0.38). 
+Relation fortement positive entre le taux de pauvreté (au seuil de 60%) et le taux de chômage moyen (0.76) ainsi qu'entre le taux de pauvreté et la part de non diplômés (0.62). A l'inverse, relation négative entre le salaire médian et la part de non diplômés (-0.78). Attention, le graphe de corrélation ne permet pas d'affirmer un lien de causalité entre les variables. Les indicateurs de corrélations aident à formaliser le modèle mais on ne peut pas parler de lien de causalité. 
+
+Nous avons décidé d'exclure le salaire médian de notre analyse puisque celui-ci diffère en fonction du département (ex : vie qui coute plus chère à Paris donc salaires plus élevés) alors que l'indice de gini mesure l'inégalité des revenus. 
+
+
+## Econométrie 
+### Homicides 
+#### Ajustement par MCO
+```{r}
+## regression
+lm_criminalite <- lm(Nb_delits_100000hab ~  Tx_pauvrete_seuil60 + Taux_chomage_moyen + Part_non_diplome + Indice_gini, data=criminalite_homicide)
+summary(lm_criminalite)
+
+plot(lm_criminalite)
+```
+**Modèle niveau-niveau :** 16% de la variance du nombre d'homicides est expliqué par le modèle (taux de pauvreté au seuil de 60%, taux de chomage moyen, part de non diplômés, indice de Gini). Le test de Fisher teste la nullité de tous les coefficients. La statistique du test est égale à 5.568 et la p-value est inférieure à 0.05 donc on rejette H0 au seuil de 5% : le modèle est mieux avec les variables que sans, il est globalement satisfaisant. Au seuil de 1%, quand l'indice de Gini augmente de 1 unité, le nombre d'homicides pour 100 000 habitants augmente de 17.
+
+**GRAPHE 1 :** si nuage de points aléatoire : homoscédasticité. hétéroscédasticité : en forme de trompette (pas totalement aléatoire). si nuage de points en forme particulière (ex: quadratique) alors c'est signe de problème de spécification (ex : si forme quadratique le nuage de point du départ n'est pas pris en compte dans le modèle alors ça se retrouve dans les résidus). Ici, forme de trompette donc on s'attend à un problème d'hétéroscédasticité.*  
+**GRAPHE 2 QQ-plot :** Le principe de ce diagramme est de découper le jeu de données en boîtes contenant le même nombre de données. Si la distribution suit une loi normale, les quantiles de résidus devraient s'organiser de la même façon que les quantiles théoriques de la fonction de régression linéaire. On devrait donc avoir un alignement entre quantiles des résidus et quantiles théoriques. Sinon, la régression risque de ne pas être pertinente. Ici, les quantiles de résidus suivent bien la droite des quantiles théoriques : la regression est donc pertinente.  
+**GRAPHE 3 :** Le graphique met en relation les racines carrées des résidus (résidus standardisés) en fonction des valeurs théoriques (fitted-values) de Y prédites par l'équation de la régression. L'homogénéité est à rejeter si la courbe n'est pas plane. A priori, il y a un problème d'hétérogénéité car la courbe n'est pas horizontale.  
+**GRAPHE 4 :** Ce graphique (distance de Cook) permet de regarder l'importance de chaque indidivu. C'est important pour savoir si les individus atypiques posent problèmes ou pas. Si la ligne rouge reste dans le cadre des pointillés c'est que les individus atypiques ne changent pas les résultats. Si la droite rouge sort du cadre, l'individu pose problème car il fait sortir de la distance de Cook. Ici, la droite rouge reste dans le cadre, aucun individu ne pose problème.    
+
+#### Test de spécification du modèle (Ramsey)
+```{r}
+## test de Ramsey
+resettest(lm_criminalite) 
+```
+**Test de Ramsey :** H0 : le modèle est bien spécifié contre H1 : le modèle est mal spécifié. Ici, p-value = 0.3375 > 0.05 : on ne rejette pas H0, le modèle est bien spécifié.
+
+#### Détection de l'autocorrélation d'ordre 1 des aléas
+L'autocorrélation à plusieurs sources :
+- l'oubli d'une ou plusieurs variables explicatives dans le modèle
+- une mauvaise forme fonctionnelle du modèle
+- une erreur de mesure de la variable expliquée
+(- l'utilisation de données non désaisonnalisées
+- la non stationnarité des séries) pas concerné
+```{r}
+### detection graphique 
+res_eq <- residuals(lm_criminalite)
+plot(res_eq, xlab="", main="Autocorrélation d'ordre 1 des aléas ?")
+abline(h=0,col="red")
+
+### test de Durbin Watson
+dwtest(lm_criminalite)
+```
+**Détection graphique :** D'après le graphique des résidus, on ne s'attend pas à avoir de l'autocorrélation d'ordre 1 des aléas.  
+**Test de Durbin-Watson : ** H0: il n'y a pas d'autocorrelation. Ici, la statistique de test DW vaut 1.9316 et la p-value est 0.3503 > 0.05. Au seuil de 5%, pour n=95 observations et k=4, nous avons que du=1.75 < 1.9316 < 4-du=2.25 donc il n'y a pas de problème d'autocorrélation.   
+
+#### Détection de l'hétéroscédasticité
+En présence d'hétéroscédasticité, les estimateurs des MCO restent sans biais mais ne sont plus de variance minimale. Ceci affecte la précision des tests.
+L'hétéroscédasticité peut provenir de plusieurs sources:
+- L'hétérogénéité de l'échantillon étudié
+- L'oubli d'une variable explicative dans le modèle
+- Une mauvaise transformation de variable ou une mauvaise forme fonctionnelle du modèle
+```{r}
+### detection graphique
+residG = residuals(lm_criminalite)
+residG2 = residG^2
+Fitted_criminalite = fitted(lm_criminalite)
+
+par(mfrow=c(3,2))
+plot(residG2~Fitted_criminalite, data=criminalite_homicide, main="héteroscedasticité - homicides prévu ?")
+plot(residG2~Tx_pauvrete_seuil60, data=criminalite_homicide, main="héteroscedasticité - taux de pauvreté ?")
+plot(residG2~Taux_chomage_moyen, data=criminalite_homicide, main="héteroscedasticité - taux de chômage ?")
+plot(residG2~Part_non_diplome, data=criminalite_homicide, main="héteroscedasticité - diplôme ?")
+plot(residG2~Indice_gini, data=criminalite_homicide, main="héteroscedasticité - indice de Gini ?")
+
+### test de White
+bptest(lm_criminalite, ~ Tx_pauvrete_seuil60 + Taux_chomage_moyen + Part_non_diplome + Indice_gini, data=criminalite_homicide)
+
+### test de Goldfield et Quandt
+gqtest(lm_criminalite, order.by = ~ Tx_pauvrete_seuil60  , fraction = 6, data=criminalite_homicide)
+gqtest(lm_criminalite, order.by = ~ Taux_chomage_moyen , fraction = 6, data=criminalite_homicide) 
+gqtest(lm_criminalite, order.by = ~ Part_non_diplome , fraction = 6, data=criminalite_homicide)
+gqtest(lm_criminalite, order.by = ~ Indice_gini , fraction = 6, data=criminalite_homicide) 
+
+### correction de White
+## matrice variance covariance avec MCO
+vcov(lm_criminalite) 
+## matrice variance covariance avec MCO corriges
+vcovHC(lm_criminalite) 
+## methode White
+coeftest(lm_criminalite, vcov = vcovHC) # on refait des tests avec la nouvelle matrice variance covariance corrigee
+# on compare 
+summary(lm_criminalite)
+
+```
+**Détection graphique** : Sur le premier graphe, le nuage de points est en forme de trompette à cause d'un (ou quelques) individu : problème d'hétéroscédasticité ?
+Sur les autres graphe (en fonction de l'indice de gini, ect.), il y aussi une forme en trompette.  On peut se dire que l'indice de gini (ect.) influencent en quelque sorte la répartition des individus (résidus).  
+**Test de White :** H0 : cas d'homoscédasticité contre H1 : cas d'hétéroscédasticité. Ici, la p-value vaut 0.1794 > 0.05 donc on ne rejette pas H0 : il n'y a (à priori) pas de problème d'hétéroscédasticité.  
+**Test de Goldfield et Quandt :** Le test de Goldfled Quandt se pose la question : est-ce que la source de l'hétéroscédasticité vient d'une variable (à l'inverse de White qui prend toutes les variables).   
+Si les variances sont identiques : pas d'hétéroscédasticité. A l'inverse, si les variances sont différentes alors problème d'hétéroscédasticité. Ainsi, le test est H0 : cas d'homoscédasticité contre H1 : cas d'hétéroscédasticité.  
+Les p-values pour l'indice de Gini, le taux de pauvreté au seuil de 60%, le taux de chômage moyen et la part de non diplômés sont inférieures à 0.05. On rejette donc H0 dans ces cas. Elles sont peut-être à l'origine d'un problème d'hétéroscédasticité.  
+**Correction de White : ** Avec la correction de White, l'indice de Gini est significatif au seuil de 10% sachant qu'il a les autres variables dans le modèle. Sans la correction, elle était significative au seuil de 0.1%. Dans les deux cas, si l'indice de gini augmente de 1 unité, le nombre d'homicide pour 100 000 habitants augmente de 17.  
+
+
+### Cambriolage
+#### Ajustement par MCO
+```{r}
+## regression
+lm_criminalite <- lm(Nb_delits_100000hab ~  Tx_pauvrete_seuil60 + Taux_chomage_moyen + Part_non_diplome + Indice_gini, data=criminalite_cambriolage)
+summary(lm_criminalite)
+
+plot(lm_criminalite)
+```
+**Modèle niveau-niveau :** 31% de la variance du nombre de cambriolages est expliqué par le modèle (taux de pauvreté au seuil de 60%, taux de chomage moyen, part de non diplômés, indice de Gini). Le test de Fisher teste la nullité de tous les coefficients. La statistique du test est égale à 12.14 et la p-value est inférieure à 0.05 donc on rejette H0 au seuil de 5% : le modèle est mieux avec les variables que sans, il est globalement satisfaisant. Au seuil de 1%, quand le taux de chômage moyen augmente de 1 point de pourcentage, le nombre de cambriolages pour 100 000 habitants augmente de 29. De même, au seuil de 5%, lorsque l'indice de gini augmente de 1 unité, le nombre de cambriolages pour 100 000 augmente de 1221.  
+
+**GRAPHE 1 :** forme de trompette donc on s'attend à un problème d'hétéroscédasticité.  
+**GRAPHE 2 QQ-plot :** les quantiles de résidus suivent plus ou moins la droite des quantiles théoriques : la regression est donc pertinente.  
+**GRAPHE 3 :** à priori, il y a un problème d'hétérogénéité car la courbe n'est pas horizontale.  
+**GRAPHE 4 :** la droite rouge reste dans le cadre, aucun individu ne pose problème.    
+
+#### Test de spécification du modèle (Ramsey)
+```{r}
+## test de Ramsey
+resettest(lm_criminalite) 
+```
+**Test de Ramsey :** H0 : le modèle est bien spécifié contre H1 : le modèle est mal spécifié. p-value = 0.3988 > 0.05 : on ne rejette pas H0, le modèle est bien spécifié.  
+
+#### Détection de l'autocorrélation d'ordre 1 des aléas
+```{r}
+### detection graphique 
+res_eq <- residuals(lm_criminalite)
+plot(res_eq, xlab="", main="Autocorrélation d'ordre 1 des aléas ?")
+abline(h=0,col="red")
+
+### test de Durbin Watson
+dwtest(lm_criminalite)
+```
+**Détection graphique :** D'après le graphique des résidus, on ne s'attend pas à avoir de l'autocorrélation d'ordre 1 des aléas.  
+**Test de Durbin-Watson : ** H0: il n'y a pas d'autocorrelation. Ici, la statistique de test DW vaut 1.888 et la p-value est 0.2742. Au seuil de 5%, pour n=95 observations et k=4, nous avons que du=1.75 < 1.888 < 4-du=2.25 donc il n'y a pas de problème d'autocorrélation.  
+
+#### Détection de l'hétéroscédasticité
+```{r}
+### detection graphique
+residG = residuals(lm_criminalite)
+residG2 = residG^2
+Fitted_criminalite = fitted(lm_criminalite)
+
+par(mfrow=c(3,2))
+plot(residG2~Fitted_criminalite, data=criminalite_cambriolage, main="héteroscedasticité - cambriolages prévu ?")
+plot(residG2~Tx_pauvrete_seuil60, data=criminalite_cambriolage, main="héteroscedasticité - taux de pauvreté ?")
+plot(residG2~Taux_chomage_moyen, data=criminalite_cambriolage, main="héteroscedasticité - taux de chômage ?")
+plot(residG2~Part_non_diplome, data=criminalite_cambriolage, main="héteroscedasticité - diplôme ?")
+plot(residG2~Indice_gini, data=criminalite_cambriolage, main="héteroscedasticité - indice de Gini ?")
+
+### test de White
+bptest(lm_criminalite, ~ Tx_pauvrete_seuil60 + Taux_chomage_moyen + Part_non_diplome + Indice_gini, data=criminalite_cambriolage)
+
+### test de Goldfield et Quandt
+gqtest(lm_criminalite, order.by = ~ Tx_pauvrete_seuil60  , fraction = 6, data=criminalite_cambriolage) 
+gqtest(lm_criminalite, order.by = ~ Taux_chomage_moyen , fraction = 6, data=criminalite_cambriolage) 
+gqtest(lm_criminalite, order.by = ~ Part_non_diplome , fraction = 6, data=criminalite_cambriolage)
+gqtest(lm_criminalite, order.by = ~ Indice_gini , fraction = 6, data=criminalite_cambriolage) 
+
+### correction de White
+## matrice variance covariance avec MCO
+vcov(lm_criminalite) 
+## matrice variance covariance avec MCO corriges
+vcovHC(lm_criminalite) 
+## methode White
+coeftest(lm_criminalite, vcov = vcovHC) # on refait des tests avec la nouvelle matrice variance covariance corrigee
+# on compare 
+summary(lm_criminalite)
+
+```
+**Détection graphique** : Sur le premier graphe, le nuage de points est en forme de trompette à cause de plusieurs individus : problème d'hétéroscédasticité ?  
+Sur les autres graphe (en fonction de l'indice de Gini, ect.), il y a aussi une forme en trompette.  On peut se dire que l'indice de gini (ect.) influencent en quelque sorte la répartition des individus (résidus).  
+**Test de White :** H0 : cas d'homoscédasticité contre H1 : cas d'hétéroscédasticité. Ici, la p-value vaut 0.1248 > 0.05 donc on ne rejette pas H0 : il n'y a (à priori) pas de problème d'hétéroscédasticité.  
+**Test de Goldfield et Quandt :** le test est H0 : cas d'homoscédasticité contre H1 : cas d'hétéroscédasticité. Les p-values pour le taux de chômage moyen, le taux de pauvreté au seuil de 60% et la part de non diplômés sont supérieures à 0.05 donc on ne rejette pas H0 dans ces cas. Ils ne sont pas à l'origine d'un problème d'hétéroscédasticité.  
+Cependant, la p-value pour l'indice de Gini est inférieure à 0.05. On rejette donc H0 : l'indice de Gini est peut-être à l'origine d'un problème d'hétéroscédasticité.  
+**Correction de White : ** Avec la correction de White, le taux de chômage moyen est significatif au seuil de 0.1% sachant qu'il a les autres variables dans le modèle. Sans la correction, elle était significative au seuil de 1%. Dans les deux cas, si le taux de chômage augmente de 1 point de pourcentage, le nombre de cambriolage pour 100 000 habitants augmente de 29. Avec la correction de White, la part de non diplômés ne devient plus significative et l'indice de gini devient significatif qu'au seuil de 10% (sachant qu'il y a les autres variables dans le modèle).  
+
+
+```{r}
+## on exporte les bases delits_fr_2016_final, criminalite, criminalite_cambriolage et criminalite_homicide pour pouvoir les utiliser directement dans l'application, sans avoir a relancer tous les traitements 
+save(delits_fr_2016_final, criminalite, criminalite_cambriolage, criminalite_homicide, file="www/donnees_criminalite.RData")
+```
+
