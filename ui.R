@@ -5,9 +5,8 @@ library(tidyverse)
 library(DT)
 library(chartjs)
 
-# code dans le fichier Rmd du projet econometrie pour sauvegarder les donnees traitees et pouvoir les utiliser directement dans shiny
-# setwd("C:/Users/Amélie/Documents/TRAVAIL/M1 MAS/VISUALISATION DES DONNEES/R/Projet_Shiny/criminalite/www")
-# save(delits_fr_2016_final,homicide_final,cambriolage_final, file="donnees_criminalite.RData")
+# code dans le fichier "traitements_donnees" pour sauvegarder les donnees traitees et pouvoir les utiliser directement dans shiny
+# save(delits_fr_2016_final,homicide_final,cambriolage_final, file="www/donnees_criminalite.RData")
 
 
 ### CONTENU DES PAGES
@@ -36,11 +35,11 @@ baccueil <- fluidPage(
         quam velit petulanter, etiamsi sine ulla suspicione, at non sine argumento male dicere? 
         Sed istarum partium culpa est eorum, qui te agere voluerunt; laus pudoris tui, 
         quod ea te invitum dicere videbamus, ingenii, quod ornate politeque dixisti.
-        "
+        ", br(), "ON EXPLIQUE ICI LES 4 BASES PROPOSEES OU ALORS ON EXPLIQUE AU DESSUS DE LA TABLE DIRECTEMENT ?"
     ),
     box(
         title ="Nos données", 
-        status = "info", 
+        status = "purple", 
         solidHeader = TRUE, 
         width = 12,
         collapsible = TRUE, 
@@ -83,7 +82,7 @@ bsources <- lapply(getAdminLTEColors(), function(color) {
 
 ### UI
 ui <- dashboardPage(
-    #options = list(sidebarExpandOnHover = FALSE),
+    options = list(sidebarExpandOnHover = FALSE),
     
     ## en-tete de la page
     dashboardHeader(
