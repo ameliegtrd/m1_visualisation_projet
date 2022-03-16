@@ -70,9 +70,112 @@ bstats_desc <- chartjs(height = "200px") %>%
     cjsSeries(data = c(1:4))
 
 ## page regression
-bregression <- lapply(getAdminLTEColors(), function(color) {
-    box(status = color)
-})
+bregression <- fluidRow(
+    column(
+        width = 6,
+        box(
+            title ="Choix de la régression", 
+            width = NULL,
+            status = "info", 
+            solidHeader = TRUE, 
+            collapsible = TRUE, 
+            align="justify",
+            "
+            Primi igitur omnium statuuntur Epigonus et Eusebius ob nominum gentilitatem oppressi. 
+            praediximus enim Montium sub ipso vivendi termino his vocabulis appellatos fabricarum culpasse 
+            tribunos ut adminicula futurae molitioni pollicitos.
+            Haec igitur prima lex amicitiae sanciatur, ut ab amicis honesta petamus, 
+            amicorum causa honesta faciamus, ne exspectemus quidem, dum rogemur; studium semper adsit, 
+            cunctatio absit; consilium vero dare audeamus libere. Plurimum in amicitia amicorum bene suadentium
+            valeat auctoritas, eaque et adhibeatur ad monendum non modo aperte sed etiam acriter, 
+            si res postulabit, et adhibitae pareatur.
+            Illud tamen te esse admonitum volo, primum ut qualis es talem te esse omnes existiment ut, 
+            quantum a rerum turpitudine abes, tantum te a verborum libertate seiungas; 
+            deinde ut ea in alterum ne dicas, quae cum tibi falso responsa sint, erubescas. 
+            Quis est enim, cui via ista non pateat, qui isti aetati atque etiam isti dignitati non possit 
+            quam velit petulanter, etiamsi sine ulla suspicione, at non sine argumento male dicere? 
+            Sed istarum partium culpa est eorum, qui te agere voluerunt; laus pudoris tui, 
+            quod ea te invitum dicere videbamus, ingenii, quod ornate politeque dixisti.
+            "
+        ),
+        box(
+            title ="Interprétation des résultats", 
+            width = NULL,
+            status = "purple", 
+            solidHeader = TRUE, 
+            collapsible = TRUE, 
+            align="justify",
+            "
+            Primi igitur omnium statuuntur Epigonus et Eusebius ob nominum gentilitatem oppressi. 
+            praediximus enim Montium sub ipso vivendi termino his vocabulis appellatos fabricarum culpasse 
+            tribunos ut adminicula futurae molitioni pollicitos.
+            Haec igitur prima lex amicitiae sanciatur, ut ab amicis honesta petamus, 
+            amicorum causa honesta faciamus, ne exspectemus quidem, dum rogemur; studium semper adsit, 
+            cunctatio absit; consilium vero dare audeamus libere. Plurimum in amicitia amicorum bene suadentium
+            valeat auctoritas, eaque et adhibeatur ad monendum non modo aperte sed etiam acriter, 
+            si res postulabit, et adhibitae pareatur.
+            Illud tamen te esse admonitum volo, primum ut qualis es talem te esse omnes existiment ut, 
+            quantum a rerum turpitudine abes, tantum te a verborum libertate seiungas; 
+            deinde ut ea in alterum ne dicas, quae cum tibi falso responsa sint, erubescas. 
+            Quis est enim, cui via ista non pateat, qui isti aetati atque etiam isti dignitati non possit 
+            quam velit petulanter, etiamsi sine ulla suspicione, at non sine argumento male dicere? 
+            Sed istarum partium culpa est eorum, qui te agere voluerunt; laus pudoris tui, 
+            quod ea te invitum dicere videbamus, ingenii, quod ornate politeque dixisti.
+            "
+        )
+    ),
+    column(
+        width = 6,
+        box(
+            title ="Résultats", 
+            width = NULL,
+            status = "purple", 
+            solidHeader = TRUE, 
+            collapsible = TRUE, 
+            align="justify",
+            "
+            Primi igitur omnium statuuntur Epigonus et Eusebius ob nominum gentilitatem oppressi. 
+            praediximus enim Montium sub ipso vivendi termino his vocabulis appellatos fabricarum culpasse 
+            tribunos ut adminicula futurae molitioni pollicitos.
+            Haec igitur prima lex amicitiae sanciatur, ut ab amicis honesta petamus, 
+            amicorum causa honesta faciamus, ne exspectemus quidem, dum rogemur; studium semper adsit, 
+            cunctatio absit; consilium vero dare audeamus libere. Plurimum in amicitia amicorum bene suadentium
+            valeat auctoritas, eaque et adhibeatur ad monendum non modo aperte sed etiam acriter, 
+            si res postulabit, et adhibitae pareatur.
+            Illud tamen te esse admonitum volo, primum ut qualis es talem te esse omnes existiment ut, 
+            quantum a rerum turpitudine abes, tantum te a verborum libertate seiungas; 
+            deinde ut ea in alterum ne dicas, quae cum tibi falso responsa sint, erubescas. 
+            Quis est enim, cui via ista non pateat, qui isti aetati atque etiam isti dignitati non possit 
+            quam velit petulanter, etiamsi sine ulla suspicione, at non sine argumento male dicere? 
+            Sed istarum partium culpa est eorum, qui te agere voluerunt; laus pudoris tui, 
+            quod ea te invitum dicere videbamus, ingenii, quod ornate politeque dixisti.
+            Primi igitur omnium statuuntur Epigonus et Eusebius ob nominum gentilitatem oppressi. 
+            praediximus enim Montium sub ipso vivendi termino his vocabulis appellatos fabricarum culpasse 
+            tribunos ut adminicula futurae molitioni pollicitos.
+            Haec igitur prima lex amicitiae sanciatur, ut ab amicis honesta petamus, 
+            amicorum causa honesta faciamus, ne exspectemus quidem, dum rogemur; studium semper adsit, 
+            cunctatio absit; consilium vero dare audeamus libere. Plurimum in amicitia amicorum bene suadentium
+            valeat auctoritas, eaque et adhibeatur ad monendum non modo aperte sed etiam acriter, 
+            si res postulabit, et adhibitae pareatur.
+            Illud tamen te esse admonitum volo, primum ut qualis es talem te esse omnes existiment ut, 
+            quantum a rerum turpitudine abes, tantum te a verborum libertate seiungas; 
+            deinde ut ea in alterum ne dicas, quae cum tibi falso responsa sint, erubescas. 
+            Quis est enim, cui via ista non pateat, qui isti aetati atque etiam isti dignitati non possit 
+            quam velit petulanter, etiamsi sine ulla suspicione, at non sine argumento male dicere? 
+            Sed istarum partium culpa est eorum, qui te agere voluerunt; laus pudoris tui, 
+            quod ea te invitum dicere videbamus, ingenii, quod ornate politeque dixisti.
+            Primi igitur omnium statuuntur Epigonus et Eusebius ob nominum gentilitatem oppressi. 
+            praediximus enim Montium sub ipso vivendi termino his vocabulis appellatos fabricarum culpasse 
+            tribunos ut adminicula futurae molitioni pollicitos.
+            Haec igitur prima lex amicitiae sanciatur, ut ab amicis honesta petamus, 
+            amicorum causa honesta faciamus, ne exspectemus quidem, dum rogemur; studium semper adsit, 
+            cunctatio absit; consilium vero dare audeamus libere. Plurimum in amicitia amicorum bene suadentium
+            valeat auctoritas, eaque et adhibeatur ad monendum non modo aperte sed etiam acriter, 
+            si res postulabit, et adhibitae pareatur.
+            "
+        )
+    )
+)
 
 ## page sources
 bsources <- lapply(getAdminLTEColors(), function(color) {

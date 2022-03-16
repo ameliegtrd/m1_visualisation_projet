@@ -16,8 +16,8 @@ shinyServer(function(input, output) {
     datatable( data = get(input$which_data),
                style = "bootstrap4",
                # personnalisation de la couleur des boutons
-               callback=JS('$("button.buttons-copy").css("background","#00c0ef"); 
-                    $("button.buttons-csv").css("background","#00c0ef");
+               callback=JS('$("button.buttons-copy").css("background","#6f42c1"); 
+                    $("button.buttons-csv").css("background","#6f42c1");
                     return table;'),
                extensions = 'Buttons',
                options = list( 
