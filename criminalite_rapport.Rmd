@@ -302,3 +302,25 @@ subplot(htp, hpnd, hig, htcm, nrows = 2) %>%
   layout(title = "Nuages de points et droites de regression",
          showlegend=TRUE)
 ```
+
+A priori, il y a corrélation positive entre l'indice de Gini et le nombre de délits pour 100 000 habitants car la pente de la droite de régression est clairement positive.  
+
+**ajouter valeurs de R^2 et y**  
+**modifier la légende de la fenetre des 4 graphes**
+
+Ensuite, nous avons représenté la matrice de corrélation.
+
+```{r}
+## correlation
+myvars <- c("Nb_delits_100000hab","Salaire_median","Tx_pauvrete_seuil60","Taux_chomage_moyen","Part_non_diplome","Indice_gini")
+matcorr <- criminalite[,myvars]
+mcor <- cor(matcorr)
+# graphe correlation
+ggcorrplot(mcor, hc.order = TRUE, type = "lower",
+           lab = T,
+           outline.col = "white",
+           ggtheme = ggplot2::theme_gray,
+           colors = c("#6D9EC1", "white", "#E46726"))
+```
+
+**Corrplot :** Il existe une relation fortement positive entre le nombre délits pour 100 000 habitants et l'indice Gini (0.78). Il y a aussi une relation positive élevée entre le taux de pauvreté (au seuil de 60%) et le taux de chômage moyen (0.76) ainsi qu'entre le taux de pauvreté et la part de non diplômés (0.62). A l'inverse, relation négative entre le salaire médian et la part de non diplômés (-0.78). **Attention, le graphe de corrélation ne permet pas d'affirmer un lien de causalité entre les variables.** Les indicateurs de corrélations aident à formaliser le modèle mais on ne peut pas parler de lien de causalité. 
