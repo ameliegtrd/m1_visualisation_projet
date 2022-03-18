@@ -4,6 +4,8 @@ library(bs4Dash)
 library(tidyverse)
 library(DT)
 library(chartjs)
+library(leaflet)
+library(RColorBrewer)
 
 # code dans le fichier "traitements_donnees" pour sauvegarder les donnees traitees et pouvoir les utiliser directement dans shiny
 # save(delits_fr_2016_final,homicide_final,cambriolage_final, file="www/donnees_criminalite.RData")
@@ -50,18 +52,45 @@ baccueil <- fluidPage(
                                 "Criminalité" = "criminalite",
                                 "Cambriolage" = "criminalite_cambriolage",
                                 "Homicide" = "criminalite_homicide"),
-                    selected = "data 1"
+                    selected = "Tout"
         ),
         DT::dataTableOutput("DTtable")
     )
 )
-    
-    
+
+
 ## page cartographie
-bcarte <- chartjs(height = "200px") %>% 
-    cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
-    cjsDoughnut(labels = LETTERS[1:4]) %>%
-    cjsSeries(data = c(1:4))
+# pour avoir la map en full screen
+js_map <- '
+$(document).on("shiny:connected", function(){
+  $("#map").css({
+    width: window.innerWidth, 
+    height: window.innerHeight
+  });
+  $(window).on("resize", function(e){
+    if(e.target instanceof Window){
+      $("#map").css({width: window.innerWidth, height: window.innerHeight});
+    }
+  });
+})
+'
+
+bcarte <- bootstrapPage(
+    tags$head(
+        tags$style(HTML("html,body {margin: 0; overflow: hidden;}")),
+        tags$script(HTML(js_map))
+    ),
+    leafletOutput("map") 
+    # absolutePanel(top = 70, right = 10,
+    #               sliderInput("range", "Magnitudes", min(quakes$mag), max(quakes$mag),
+    #                           value = range(quakes$mag), step = 0.1
+    #               ),
+    #               selectInput("colors", "Color Scheme",
+    #                           rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
+    #               ),
+    #               checkboxInput("legend", "Show legend", TRUE)
+    # )
+)
     
 ## page statistiques
 bstats_desc <- chartjs(height = "200px") %>% 
@@ -181,7 +210,6 @@ bregression <- fluidRow(
 bsources <- lapply(getAdminLTEColors(), function(color) {
     box(status = color)
 })
-
 
 ### UI
 ui <- dashboardPage(

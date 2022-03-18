@@ -4,13 +4,16 @@ library(bs4Dash)
 library(tidyverse)
 library(DT)
 library(chartjs)
+library(leaflet)
+library(RColorBrewer)
 
 ## on recupere les donnees stockees au prealable
 load("www/donnees_criminalite.RData")
 
 
 shinyServer(function(input, output) {
-  ## table de toutes les donnees 
+  
+  ## table de toutes les donnees sur la page acceuil
   output$DTtable <- DT::renderDataTable(
     server = FALSE,
     datatable( data = get(input$which_data),
@@ -45,8 +48,14 @@ shinyServer(function(input, output) {
                  pageLength = 10,
                  scrollX = TRUE
                ) 
-    )) 
+  )) 
   
-  ## 
+  ## carte pour visualisation des donnees
+  output$map <- renderLeaflet({
+    # define the leaflet map object
+    leaflet() %>%  
+      addProviderTiles("OpenStreetMap.Mapnik") %>%
+      setView(lng = 15, lat = 46.80, zoom = 5)
+  })
   
 })
