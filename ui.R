@@ -60,36 +60,33 @@ baccueil <- fluidPage(
 
 
 ## page cartographie
-# pour avoir la map en full screen
-js_map <- '
-$(document).on("shiny:connected", function(){
-  $("#map").css({
-    width: window.innerWidth, 
-    height: window.innerHeight
-  });
-  $(window).on("resize", function(e){
-    if(e.target instanceof Window){
-      $("#map").css({width: window.innerWidth, height: window.innerHeight});
-    }
-  });
-})
-'
-
-bcarte <- bootstrapPage(
+bcarte <- fluidPage(
     tags$head(
-        tags$style(HTML("html,body {margin: 0; overflow: hidden;}")),
-        tags$script(HTML(js_map))
+        # pour avoir la map en full screen
+        tags$style(type = "text/css", "#map {height: calc(100vh - 80px) !important;}")
     ),
-    leafletOutput("map") 
-    # absolutePanel(top = 70, right = 10,
-    #               sliderInput("range", "Magnitudes", min(quakes$mag), max(quakes$mag),
-    #                           value = range(quakes$mag), step = 0.1
-    #               ),
-    #               selectInput("colors", "Color Scheme",
-    #                           rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
-    #               ),
-    #               checkboxInput("legend", "Show legend", TRUE)
-    # )
+    # on affiche la map
+    leafletOutput("map"),
+    # panneau de controle sur la map et deplacable (option draggable=TRUE)
+    absolutePanel(
+      top = 70, left = "auto", right = 30, bottom = "auto",
+      height = "auto", width = "40vw", draggable = TRUE,
+      wellPanel(
+        selectInput("which_map",
+                    "Sélectionne les données que tu souhaites représenter", 
+                    choices = c("Criminalité" = "criminalite",
+                                "Cambriolage" = "criminalite_cambriolage",
+                                "Homicide" = "criminalite_homicide"),
+                    selected = "Criminalité"
+        ),
+      ),
+      # on met le panneau de controle devant la map (z-index), 
+      # on modifie la transparence puis la couleur, la forme et les espacements
+      style = "background: #D9EAD5; opacity: 0.8; z-index: 10; 
+               padding: 20px 20px 20px 20px; border-radius: 5pt;
+               box-shadow: 0pt 0pt 6pt 0px rgba(61,59,61,0.48);
+               padding-bottom: 2mm; padding-top: 1mm; margin:auto;",
+    )
 )
     
 ## page statistiques
@@ -236,7 +233,7 @@ ui <- dashboardPage(
                 menuSubItem(" Statistiques", tabName = "stats_desc")
             ),
             menuItem(
-                "Régression", tabName = "regression", icon = icon("line-chart", lib="font-awesome")
+                "Régression", tabName = "regression", icon = icon("fas fa-chart-line", lib="font-awesome")
             ),
             menuItem(
                 "Sources", tabName = "sources", icon = icon("file")

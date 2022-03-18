@@ -13,7 +13,7 @@ load("www/donnees_criminalite.RData")
 
 shinyServer(function(input, output) {
   
-  ## table de toutes les donnees sur la page acceuil
+  ## table des donnees sur la page "Donnees"
   output$DTtable <- DT::renderDataTable(
     server = FALSE,
     datatable( data = get(input$which_data),
@@ -50,7 +50,7 @@ shinyServer(function(input, output) {
                ) 
   )) 
   
-  ## carte pour visualisation des donnees
+  ## carte pour la visualisation des donnees
   output$map <- renderLeaflet({
     # define the leaflet map object
     leaflet() %>%  
