@@ -24,19 +24,21 @@ output:
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
+**Nota Bene** : Si vous le souhaitez, lors de la lecture de ce rapport, vous pouvez cacher le code en cliquant sur "Hide All Code" dans l'onglet "Code" en haut à droite de la page.
+
 # 1. Présentation du sujet 
 
-L’objectif de cette application (disponible [ici](https://data.world/notgibs/rolling-stones-top-500-albums)) est de présenter à l‘utilisateur une interface qui lui permettra d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
+L’objectif de cette application (disponible [ici](https://data.world/notgibs/rolling-stones-top-500-albums)) est de présenter à l‘utilisateur une interface qui lui permet d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
 
 Un modèle de données de panel a été estimé en utilisant les données des départements français. Pour construire notre modèle, nous avons considéré plusieurs facteurs sociaux qui pourraient contribuer à l’évolution du phénomène.
 
-L’analyse se concentrera sur les déterminants de tous les délits recensés en France métropolitaine en 2016. Prenons la définition de la criminalité donnée par l’INSEE, les crimes et délits constatés en France sont des faits bruts portés pour la première fois à la connaissance des services de police et de gendarmerie. Sont exclus des statistiques de la criminalité constatée, l'ensemble des contraventions ainsi que les délits relatifs à la circulation routière, les actes de police administrative et les infractions relevées par d'autres administrations (douanes, services fiscaux et répression des fraudes, inspection du travail...).
+L’analyse se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. Prenons la définition de la criminalité donnée par l’INSEE, les crimes et délits constatés en France sont des faits bruts portés pour la première fois à la connaissance des services de police et de gendarmerie. Sont exclus des statistiques de la criminalité constatée, l'ensemble des contraventions ainsi que les délits relatifs à la circulation routière, les actes de police administrative et les infractions relevées par d'autres administrations (douanes, services fiscaux et répression des fraudes, inspection du travail...).
 
 # 2. Présentation des données
 
 ## 2.1 Importation des données
 
-Dans un premier temps, nous avons importé les différentes bases de données. La base principale porte sur les délits en France en 2016. Nous avons supprimé les lignes vides intitulées « index non utilisés ». Ensuite, nous avons attribué comme nom de ligne, le nom des différents délits. Puis, nous avons transposé la base car nous souhaitions avoir les délits en colonne et nous avons ajouté une colonne comprenant les 96 départements de France métropolitaine. Suite à cela, nous avons importé les bases contenant les différents indicateurs. Les bases incluant les données sur la population, le taux de pauvreté et l’indice de Gini ont été importées facilement. Nous avons seulement dû renommer la variable département pour que les jointures se fassent naturellement. En revanche, nous avons dû modifier la base diplôme en regroupant certaines colonnes. Les variables représentant le niveau de diplôme étaient ordonnées par sexe et par tranche d’âge, nous avons donc regroupé les colonnes par type car nous nous intéressons à la population générale. De plus, les données étant triées par commune, nous avons effectué un nouveau regroupement pour les avoir par département. Enfin, nous avons ajouté la population totale pour chaque département afin de calculer la part de personnes diplômées et la part de personnes non-diplômées. Pour finir, la base sur le taux de chômage contenait des données allant de 1982 à 2019, nous avons seulement conservé les données de 2016. Les données étant présentées par trimestre, nous avons décidé d’en faire la moyenne pour avoir un taux de chômage annuel moyen pour chaque département. Nous avons décidé d'exclure le salaire médian de notre analyse puisque celui-ci diffère en fonction du département (ex : vie qui coute plus chère à Paris donc salaires plus élevés) alors que l'indice de gini mesure l'inégalité des revenus. 
+Dans un premier temps, nous avons importé les différentes bases de données. La base principale porte sur les délits en France en 2016. Nous avons supprimé les lignes vides intitulées « index non utilisés ». Ensuite, nous avons attribué comme nom de ligne, le nom des différents délits. Puis, nous avons transposé la base car nous souhaitions avoir les délits en colonne et nous avons ajouté une colonne comprenant les 96 départements de France métropolitaine. Suite à cela, nous avons importé les bases contenant les différents indicateurs. Les bases incluant les données sur la population, le taux de pauvreté et l’indice de Gini ont été importées facilement. Nous avons seulement dû renommer la variable département pour que les jointures se fassent naturellement. En revanche, nous avons dû modifier la base diplôme en regroupant certaines colonnes. Les variables représentant le niveau de diplôme étaient ordonnées par sexe et par tranche d’âge, nous avons donc regroupé les colonnes par type car nous nous intéressons à la population générale. De plus, les données étant triées par commune, nous avons effectué un nouveau regroupement pour les avoir par département. Enfin, nous avons ajouté la population totale pour chaque département afin de calculer la part de personnes diplômées et la part de personnes non-diplômées. Pour finir, la base sur le taux de chômage contenait des données allant de 1982 à 2019, nous avons seulement conservé les données de 2016. Les données étant présentées par trimestre, nous avons décidé d’en faire la moyenne pour avoir un taux de chômage annuel moyen pour chaque département. Nous avons convenu d'exclure le salaire médian de notre analyse puisque celui-ci diffère en fonction du département (ex : vie qui coûte plus chère à Paris donc salaires plus élevés) alors que l'indice de gini mesure l'inégalité des revenus. 
 
 Dans un second temps, nous avons vérifié qu’il n’y avait pas de données manquantes ou aberrantes. Une fois la révision faite, nous avons pu créer différentes bases. Il existe différents groupes de délits tels que les homicides, les violences sexuelles, les coups et blessures volontaires, les vols avec armes, etc.
 
@@ -50,7 +52,7 @@ Dans un dernier temps, nous avons fait la jointure des bases. Nous avons joint l
 # setwd("~/Desktop/scolarité/M1 MAS/Semestre 2/Visualisation/Projet/www")
 
 # Definition des librairies dont on a besoin
-load_lib <- c("tidyverse","readxl","lmtest","systemfit","ggcorrplot", "ggpmisc","cowplot","sandwich", "kableExtra", "knitr", "rAmCharts")
+load_lib <- c("tidyverse","readxl","lmtest","systemfit","ggcorrplot", "ggpmisc","cowplot","sandwich", "kableExtra", "knitr", "rAmCharts","plotly")
 
 # Packages necessaires qui ne sont pas installes
 install_lib <- load_lib[!load_lib %in% installed.packages()] 
@@ -184,17 +186,21 @@ Nb_delits_100000hab | Nombre de délits violents pour 100 000 habitants par dép
 
 ## 3.1 Présentation de l'application
 
+C'est une application dynamique et intéractive. L'utilisateur a la ossibilité de choisir le thème de celle-ci (clair ou sombre). Il peut aussi choisir la couleur de la barre de navigation, de la barre latérale et des accents.
+
+Pour construire notre dashboard, nous nous sommes inspirées de [celui-ci](https://adminlte.io/themes/AdminLTE/index2.html)
+
 Notre application comporte 4 parties : 
 
 - **Données** : Présentation de la base de données et affichage de la table. 
 
 - **Statistiques descriptives** : Cette partie comporte deux onglets. 
-  - **Premier onglet** : Il permet de choisir le type de criminalité, et d'afficher par département le nombre total de crime. Il fait de même pour 100 000 habitants. Il présente aussi des boxplots et des tableaux contenant des statistiques telles que la moyenne, la médiane, etc. 
-  - **Second onglet** : Il permet de choisir un département et d'afficher un "pie graph" avec les pourcentages de chaque type de crime. L'utilisateur aura aussi la possibilité de comparer deux départements. 
+  - **Premier onglet** : Permet de choisir le type de criminalité, et d'afficher par département le nombre total de crime. Il fait de même pour 100 000 habitants. Il présente aussi des boxplots et des tableaux contenant des statistiques telles que la moyenne, la médiane, etc. 
+  - **Second onglet** : Permet de choisir un département et d'afficher un "pie graph" avec les pourcentages de chaque type de crime. L'utilisateur aura aussi la possibilité de comparer deux départements. 
 
 - **Régression** : L'utilisateur aura le choix des variables de la regression. Affichage d'un box qui interpréte les résultats de la régression. 
 
-- **Sources** : Liens des différents sites internet dont nous nous sommes servies pour développer notre application.  
+- **Sources** : Liens des différents sites internet dont nous nous sommes servies pour développer notre application.
 
 ## 3.2 Développement de l'application et difficultés rencontrées
 
@@ -204,9 +210,6 @@ Quand la navigation est en petit, afficher Crime
  
 L'utilisateur aura le choix des variables de la regression. Un message "pop-up" s'affichera pour avertir l'utilisateur de la non fiabilité des résultats et de la non fiabilité des résultats et pourquoi (auto-corrélation ect) + box qui interpréte les résultats de la régression.
 
-*à supprimer*
-Ex d'un dashboard
-https://adminlte.io/themes/AdminLTE/index2.html
 
 Pour en savoir plus sur la création d'une application [Shiny - RStudio](https://shiny.rstudio.com)
 
@@ -231,39 +234,71 @@ Voici le tableau des 10 departements qui ont le plus de delits pour 100 000 habi
 # Top des 10 departements qui ont le plus de delits
 knitr::kable(criminalite %>% slice_max(Nb_delits_100000hab,n=10) %>% select("Departement","Nb_delits_100000hab")) %>% 
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
-
 ```
 
 Le département de la Seine (75) compte 12 403 délits pour 100 000 habitants en 2016. C'est le département qui compte le plus de délits pour 100 000 habitants.
 
 ## 4.2 Statistiques bivariées
+
+Tout d'abord, nous avons représenté le nuage de points et la droite de régression entre le nombre de délits pour 100 000 habitants et :  
+- le taux de pauvreté  
+- la part de non-diplômé  
+- l'indice de Gini  
+- le taux de chômage moyen
+
 ```{r}
-## nuage de points entre criminalite et taux de pauvrete
-my.formula <- y ~ x
-htp <- ggplot(criminalite, aes(x = Nb_delits_100000hab, y = Tx_pauvrete_seuil60, label=Tx_pauvrete_seuil60)) + geom_smooth(method=lm, se=F, formula = my.formula) + stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) + geom_point() 
+# Nuage de points entre criminalite et taux de pauvrete
+model <- lm(Tx_pauvrete_seuil60~Nb_delits_100000hab,data=criminalite)
+htp <- criminalite %>% plot_ly(x=~Nb_delits_100000hab, y=~Tx_pauvrete_seuil60) %>%
+  add_markers(type="scatter",mode="markers",
+              marker=list(color="blue"),name="Nuage de points") %>% 
+  add_trace(y=fitted(model),type="scatter",mode='lines',
+            name="Régression",line=list(color="red")) %>% 
+  layout(xaxis=list(title="Nombre de délits pour 100 000 habitants"),
+         yaxis=list(title="Taux de pauvreté au seuil 60%"),
+         annotations = list(x=10000, y=19,text = "y = 11.4 + 0.000687x, R^2 = 0.10",showarrow =TRUE))
 
-## nuage de points entre criminalite et part de non diplomes
-hpnd <- ggplot(criminalite, aes(x = Nb_delits_100000hab, y = Part_non_diplome, label = Part_non_diplome)) + geom_smooth(method=lm, se=F, formula = my.formula) +  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + geom_point() 
+# ajouter valeurs de R^2 et y
+#COR = cor.test(criminalite$Nb_delits_100000hab,criminalite$Tx_pauvrete_seuil60)[c("pearson","p.value")]
+#COR_text = paste(c("R^2=","y="),signif(as.numeric(COR,3),3),collapse=" ")
+# annotations = list(x=10000, y=19,text = COR_text,showarrow =TRUE)
 
-## nuage de points entre criminalite et indice de Gini
-hig <- ggplot(criminalite, aes(x = Nb_delits_100000hab, y = Indice_gini, label=Indice_gini))  +  geom_smooth(method=lm, se=F, formula = my.formula) + stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + geom_point()
+# Nuage de points entre criminalite et part de non diplomes
+model <- lm(Part_non_diplome~Nb_delits_100000hab,data=criminalite)
+hpnd <- criminalite %>% plot_ly(x=~Nb_delits_100000hab, y=~Part_non_diplome) %>%
+  add_markers(type="scatter",mode="markers",
+              marker=list(color="blue"),name="Nuage de points") %>% 
+  add_trace(y=fitted(model),type="scatter",mode='lines',
+            name="Régression",line=list(color="red")) %>% 
+  layout(xaxis=list(title="Nombre de délits pour 100 000 habitants"),
+         yaxis=list(title="Part des non-diplômés"),
+         annotations = list(x=10000, y=50,text = "y = 31.7 - 0.000546x, R^2 = 0.09",showarrow =TRUE))
 
-## nuage de points entre criminalite et taux chomage moyen
-htcm <- ggplot(criminalite, aes(x = Nb_delits_100000hab, y = Taux_chomage_moyen, label=Indice_gini))  +  geom_smooth(method=lm, se=F, formula = my.formula) + stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = T) + geom_point()
+# Nuage de points entre criminalite et indice de Gini
+model <- lm(Indice_gini~Nb_delits_100000hab,data=criminalite)
+hig <- criminalite %>% plot_ly(x=~Nb_delits_100000hab, y=~Indice_gini) %>%
+  add_markers(type="scatter",mode="markers",
+              marker=list(color="blue"),name="Nuage de points") %>% 
+  add_trace(y=fitted(model),type="scatter",mode='lines',
+            name="Régression",line=list(color="red")) %>% 
+  layout(xaxis=list(title="Nombre de délits pour 100 000 habitants"),
+         yaxis=list(title="Part des non-diplômés"))
+# annotations = list(x=10000, y=7,text = "y = 0.195 + 0.0000152x, R^2 = 0.60",showarrow =TRUE)
 
-# les 4 graphes sur la meme fenetre
-plot_grid(htp, hpnd, hig, htcm, ncol = 2, nrow = 2)
+# Nuage de points entre criminalite et taux chomage moyen
+model <- lm(Taux_chomage_moyen~Nb_delits_100000hab,data=criminalite)
+htcm <- criminalite %>% plot_ly(x=~Nb_delits_100000hab, y=~Taux_chomage_moyen) %>%
+  add_markers(type="scatter",mode="markers",
+              marker=list(color="blue"),name="Nuage de points") %>% 
+  add_trace(y=fitted(model),type="scatter",mode='lines',
+            name="Régression",line=list(color="red")) %>% 
+  layout(xaxis=list(title="Nombre de délits pour 100 000 habitants"),
+         yaxis=list(title="Part des non-diplômés"),
+         annotations = list(x=10000, y=19,text = "y = 8.17 + 0.000335x, R^2 = 0.07",showarrow =TRUE))
 
-## correlation
-myvars <- c("Nb_delits_100000hab","Salaire_median","Tx_pauvrete_seuil60","Taux_chomage_moyen","Part_non_diplome","Indice_gini")
-matcorr <- criminalite[,myvars]
-mcor <- cor(matcorr)
-# graphe correlation
-ggcorrplot(mcor, hc.order = TRUE, type = "lower",
-           lab = T,
-           outline.col = "white",
-           ggtheme = ggplot2::theme_gray,
-           colors = c("#6D9EC1", "white", "#E46726"))
+# Mettre les 4 graphes sur la meme fenetre
+# subplot
+subplot(htp, hpnd, hig, htcm, nrows = 2) %>% 
+  layout(title = "Nuages de points et droites de regression",
+         showlegend=TRUE)
 ```
-**Graphique :** A priori, il y a corrélation positive entre l'indice de Gini et le nombre de délits pour 100 000 habitants car la pente de la droite de régression est clairement positive.  
-**Corrplot :** Il existe une relation fortement positive entre le nombre délits pour 100 000 habitants et l'indice Gini (0.78). Il y a aussi une relation positive élevée entre le taux de pauvreté (au seuil de 60%) et le taux de chômage moyen (0.76) ainsi qu'entre le taux de pauvreté et la part de non diplômés (0.62). A l'inverse, relation négative entre le salaire médian et la part de non diplômés (-0.78). **Attention, le graphe de corrélation ne permet pas d'affirmer un lien de causalité entre les variables.** Les indicateurs de corrélations aident à formaliser le modèle mais on ne peut pas parler de lien de causalité. 
