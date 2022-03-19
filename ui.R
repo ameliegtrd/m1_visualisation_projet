@@ -47,6 +47,9 @@ baccueil <- fluidPage(
         br(), "- les coups et blessures volontaires suivis de mort",
         br(), "Même si les coups et blessures volontaires suivis de mort ne sont pas des homicides au sens juridique, nous avons décidé de les intégrer dans cet indicateur.
        Un homicide est l'action de tuer un autre être humain, qu’elle soit volontaire ou non.
+        ", br(),
+        "
+        METTRE LES TITRES DES 4 BASES EN GRAS ET METTRE UN ALINÉA DEVANT LES 4 TYPES D'HOMICIDES
         "
     ),
     box(
