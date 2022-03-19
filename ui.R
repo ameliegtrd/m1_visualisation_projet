@@ -22,22 +22,32 @@ baccueil <- fluidPage(
         collapsible = TRUE, 
         align="justify",
         "
-        Primi igitur omnium statuuntur Epigonus et Eusebius ob nominum gentilitatem oppressi. 
-        praediximus enim Montium sub ipso vivendi termino his vocabulis appellatos fabricarum culpasse 
-        tribunos ut adminicula futurae molitioni pollicitos.
-        Haec igitur prima lex amicitiae sanciatur, ut ab amicis honesta petamus, 
-        amicorum causa honesta faciamus, ne exspectemus quidem, dum rogemur; studium semper adsit, 
-        cunctatio absit; consilium vero dare audeamus libere. Plurimum in amicitia amicorum bene suadentium
-        valeat auctoritas, eaque et adhibeatur ad monendum non modo aperte sed etiam acriter, 
-        si res postulabit, et adhibitae pareatur.
-        Illud tamen te esse admonitum volo, primum ut qualis es talem te esse omnes existiment ut, 
-        quantum a rerum turpitudine abes, tantum te a verborum libertate seiungas; 
-        deinde ut ea in alterum ne dicas, quae cum tibi falso responsa sint, erubescas. 
-        Quis est enim, cui via ista non pateat, qui isti aetati atque etiam isti dignitati non possit 
-        quam velit petulanter, etiamsi sine ulla suspicione, at non sine argumento male dicere? 
-        Sed istarum partium culpa est eorum, qui te agere voluerunt; laus pudoris tui, 
-        quod ea te invitum dicere videbamus, ingenii, quod ornate politeque dixisti.
-        ", br(), "ON EXPLIQUE ICI LES 4 BASES PROPOSEES OU ALORS ON EXPLIQUE AU DESSUS DE LA TABLE DIRECTEMENT ?"
+       L’objectif de cette application est de présenter à l‘utilisateur une interface qui lui permet d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
+        ", br(), 
+        "
+       L'utilisateur aura le choix de prendre une base parmi les quatre proposées ci-dessous :
+        ", br(),
+        "
+       - Base totale : Cette base comprend tous les déterminants de tous les délits recensés en France métropolitaine en 2016. 
+        ", br(), 
+        "
+       - Criminalité : Cette base se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. 
+       Ici, nous avons conservé 8 variables expliquant la criminalité par département (cf le dictionnaire de données dans le Rapport).
+        ", br(), 
+        "
+       - Cambriolage : Les données relatives aux cambriolages désignent la violation de lieu privé, l'entrée dans un lieu sans autorisation, généralement par effraction, dans l'intention d'y commettre un vol.
+       Cet indicateur additionne les cambriolages de résidences principales et les cambriolages de résidences secondaires car ces deux types d’infractions relèvent des mêmes modes opératoires.
+       Les infractions de tentatives de cambriolages sont également enregistrées dans cet indicateur.
+        ", br(), 
+        "
+       - Homicide : Cette base regroupe les 4 catégories de crimes suivantes :",
+        br(), "- les règlements de comptes entre malfaiteurs",
+        br(), "- les homicides pour voler et à l’occasion de vols",
+        br(), "- les homicides pour d’autres motifs",
+        br(), "- les coups et blessures volontaires suivis de mort",
+        br(), "Même si les coups et blessures volontaires suivis de mort ne sont pas des homicides au sens juridique, nous avons décidé de les intégrer dans cet indicateur.
+       Un homicide est l'action de tuer un autre être humain, qu’elle soit volontaire ou non.
+        "
     ),
     box(
         title ="Nos données", 
