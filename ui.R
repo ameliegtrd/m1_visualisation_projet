@@ -54,7 +54,7 @@ baccueil <- fluidRow(
                   status="maroon",solidHeader = FALSE,align="justify",
                   title = "Criminalité",
                   "Cette base se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. 
-          Ici, nous avons conservé 8 variables expliquant la criminalité par département (cf le dictionnaire de données dans le Rapport)"
+          Ici, nous avons conservé 8 variables expliquant la criminalité par département (cf le dictionnaire de données dans le Rapport)."
                 ),
                 box(
                   width = NULL,
