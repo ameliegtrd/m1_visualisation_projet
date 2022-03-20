@@ -229,7 +229,7 @@ bregression <- fluidRow(
           "
           Dans cet onglet est généré la Heatmap des corrélations entre les variables du modèle.
           Lorsque l'on clique sur une des cases, un deuxième graphique apparaît en dessous.
-          Il représente le nuage de points des 2 variables en questions et calcule la droite de régression associé à un modèle linéaire.
+          Il représente le nuage de points des 2 variables en question et calcule la droite de régression associée à un modèle linéaire.
           ", br(),
           icon("exclamation-triangle"), "Attention, le graphe de corrélation ne permet pas d'affirmer un lien de causalité entre les variables. Les indicateurs de corrélations aident à formaliser le modèle mais on ne peut pas parler de lien de causalité."
         )
