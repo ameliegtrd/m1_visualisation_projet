@@ -137,7 +137,7 @@ shinyServer(function(input, output) {
     
     # droite de regression avec les variables x/y cliquees sur la heatmap
     vars <- c(clickData[["x"]], clickData[["y"]])
-    d <- setNames(matcorr[vars], c("x", "y"))
+    d <- setNames(data.react()[vars], c("x", "y"))
     yhat <- fitted(lm(y ~ x, data = d))
     
     # nuage de points avec ligne d'ajustement (modele lineaire)
