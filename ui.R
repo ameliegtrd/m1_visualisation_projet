@@ -3,7 +3,6 @@ library(shiny)
 library(bs4Dash)
 library(tidyverse)
 library(DT)
-library(chartjs)
 library(leaflet)
 library(RColorBrewer)
 library(rAmCharts)
@@ -16,7 +15,7 @@ df_list <- list("criminalite", "criminalite_homicide", "criminalite_cambriolage"
 
 ### CONTENU DES PAGES
 ## page d'accueil
-baccueil <- fluidPage(
+baccueil <- fluidRow(
     box(
         title ="Présentation des données", 
         status = "info", 
@@ -25,35 +24,50 @@ baccueil <- fluidPage(
         collapsible = TRUE, 
         align="justify",
         "
-       L’objectif de cette application est de présenter à l‘utilisateur une interface qui lui permet d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
-        ", br(), 
-        "
-       L'utilisateur aura le choix de prendre une base parmi les quatre proposées ci-dessous :
-        ", br(),
-        "
-       - Base totale : Cette base comprend tous les déterminants de tous les délits recensés en France métropolitaine en 2016. 
-        ", br(), 
-        "
-       - Criminalité : Cette base se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. 
-       Ici, nous avons conservé 8 variables expliquant la criminalité par département (cf le dictionnaire de données dans le Rapport).
-        ", br(), 
-        "
-       - Cambriolage : Les données relatives aux cambriolages désignent la violation de lieu privé, l'entrée dans un lieu sans autorisation, généralement par effraction, dans l'intention d'y commettre un vol.
-       Cet indicateur additionne les cambriolages de résidences principales et les cambriolages de résidences secondaires car ces deux types d’infractions relèvent des mêmes modes opératoires.
-       Les infractions de tentatives de cambriolages sont également enregistrées dans cet indicateur.
-        ", br(), 
-        "
-       - Homicide : Cette base regroupe les 4 catégories de crimes suivantes :",
-        br(), "- les règlements de comptes entre malfaiteurs",
-        br(), "- les homicides pour voler et à l’occasion de vols",
-        br(), "- les homicides pour d’autres motifs",
-        br(), "- les coups et blessures volontaires suivis de mort",
-        br(), "Même si les coups et blessures volontaires suivis de mort ne sont pas des homicides au sens juridique, nous avons décidé de les intégrer dans cet indicateur.
-       Un homicide est l'action de tuer un autre être humain, qu’elle soit volontaire ou non.
-        ", br(),
-        "
-        METTRE LES TITRES DES 4 BASES EN GRAS ET METTRE UN ALINÉA DEVANT LES 4 TYPES D'HOMICIDES
-        "
+        L’objectif de cette application est de présenter à l‘utilisateur une interface qui lui permet d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
+        Les données sont issues de l'INSEE et on été traitées pour obtenir les bases de données qui seront utilisées dans cette application.", br(), 
+        "L'utilisateur pourra choisir une base parmi les quatres proposées ci-dessous : ", br(), 
+        column( width = 6,
+                box(
+                  width = NULL,
+                  status="maroon",solidHeader = FALSE, align="justify",
+                  title = "Base totale",
+                  "Cette base comprend tous les déterminants de tous les délits recensés en France métropolitaine en 2016."
+                  
+                ),
+                box(
+                  width = NULL,
+                  status="maroon",solidHeader = FALSE,align="justify",
+                  title = "Homicide",
+                  "Cette base regroupe les 4 catégories de crimes suivantes :",
+                  br(), "- les règlements de comptes entre malfaiteurs",
+                  br(), "- les homicides pour voler et à l’occasion de vols",
+                  br(), "- les homicides pour d’autres motifs",
+                  br(), "- les coups et blessures volontaires suivis de mort",
+                  br(), "Même si les coups et blessures volontaires suivis de mort ne sont pas des homicides au sens juridique, nous avons décidé de les intégrer dans cet indicateur.
+          Un homicide est l'action de tuer un autre être humain, qu’elle soit volontaire ou non."
+                )
+        ),
+        column( width = 6,
+                box(
+                  width = NULL,
+                  status="maroon",solidHeader = FALSE,align="justify",
+                  title = "Criminalité",
+                  "Cette base se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. 
+          Ici, nous avons conservé 8 variables expliquant la criminalité par département (cf le dictionnaire de données dans le Rapport)"
+                ),
+                box(
+                  width = NULL,
+                  status="maroon",solidHeader = FALSE,align="justify",
+                  title = "Cambriolage",
+                  "Les données relatives aux cambriolages désignent la violation de lieu privé, l'entrée dans un lieu sans autorisation, généralement par effraction, dans l'intention d'y commettre un vol.
+          Cet indicateur additionne les cambriolages de résidences principales et les cambriolages de résidences secondaires car ces deux types d’infractions relèvent des mêmes modes opératoires.
+          Les infractions de tentatives de cambriolages sont également enregistrées dans cet indicateur"
+                ),
+                
+          
+        ),
+        "Bla bla"
     ),
     box(
         title ="Nos données", 
@@ -107,81 +121,64 @@ bcarte <- fluidPage(
 )
     
 ## page statistiques
-bstats_desc <- fluidRow(box(
-                            title ="Choix de la table", 
-                            status = "info", 
-                            solidHeader = TRUE, 
-                            width = 12,
-                            collapsible = TRUE, 
-                            align="justify",
-  selectInput("which_bdd", 
-              "Sélectionne la table que tu souhaites voir", 
-              choices = c("Criminalité" = "criminalite",
-                          "Cambriolage" = "criminalite_cambriolage",
-                          "Homicide" = "criminalite_homicide"),
-              selected = "Criminalité"
-  )
-  
-),
-  column(
-    width = 6,
-    box(title ="Département 1", 
-      status = "info", 
-      solidHeader = TRUE, 
-      width = 12,
-      collapsible = TRUE, 
-      align="justify",
-      selectizeInput("which_dep1",
-                 "Sélectionne le département", 
-                 choices = c("1", "2","3","4","5", "6","7","8", "9","10",
-                             "11", "12", "13", "14", "15", "16", "17", "18", "19", "2A", "2B",
-                             "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
-                             "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
-                             "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
-                             "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
-                             "61", "62", "63", "64", "65", "66", "67", "68", "69", "70",
-                             "71", "72", "73", "74", "75", "76", "77", "78", "79", "80",
-                             "81", "82", "83", "84", "85", "86", "87", "88", "89", "90",
-                             "91", "92", "93", "94", "95"),
-                 selected = "1"
-  ),
-  amChartsOutput(outputId = "boxplot_box1")),
-  ),
-
-column(width = 6,
-      box(title ="Département 2", 
-          status = "info", 
-          solidHeader = TRUE, 
-          width = 12,
-          collapsible = TRUE, 
-          align="justify",
-          selectizeInput("which_dep2",
-                         "Sélectionne le département", 
-                         choices = c("1", "2","3","4","5", "6","7","8", "9","10",
-                                     "11", "12", "13", "14", "15", "16", "17", "18", "19", "2A", "2B",
-                                     "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
-                                     "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
-                                     "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
-                                     "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
-                                     "61", "62", "63", "64", "65", "66", "67", "68", "69", "70",
-                                     "71", "72", "73", "74", "75", "76", "77", "78", "79", "80",
-                                     "81", "82", "83", "84", "85", "86", "87", "88", "89", "90",
-                                     "91", "92", "93", "94", "95"),
-                         selected =  "2"
-          ),
-          amChartsOutput(outputId = "boxplot_box2"))
-  
-         
-  )
-  
-)
-#bstats_desc <- chartjs(height = "200px") %>% 
-#    cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
- #   cjsDoughnut(labels = LETTERS[1:4]) %>%
-#    cjsSeries(data = c(1:4))
+bstats_desc <- lapply(getAdminLTEColors(), function(color) {
+  box(status = color)
+})
+# bstats_desc <- fluidRow(
+#   box(
+#     title ="Choix de la table", 
+#     status = "info", 
+#     solidHeader = TRUE, 
+#     width = 12,
+#     collapsible = TRUE, 
+#     align="justify",
+#     selectInput("which_bdd",
+#                 "Sélectionne la table que tu souhaites voir", 
+#                 choices = c("Criminalité" = "criminalite",
+#                             "Cambriolage" = "criminalite_cambriolage",
+#                             "Homicide" = "criminalite_homicide"),
+#                 selected = "Criminalité"
+#     )
+#   
+#   ),
+#   column(
+#     width = 6,
+#     box(
+#       title ="Département 1", 
+#       status = "info", 
+#       solidHeader = TRUE, 
+#       width = 12,
+#       collapsible = TRUE, 
+#       align="justify",
+#       selectizeInput("which_dep1",
+#                      "Sélectionne le département", 
+#                       choices = c(),
+#                       selected = "1"
+#       ),
+#       amChartsOutput(outputId = "boxplot_box1")
+#     ),
+#   ),
+#   column(
+#     width = 6,
+#     box(title ="Département 2",
+#         status = "info", 
+#         solidHeader = TRUE, 
+#         width = 12,
+#         collapsible = TRUE, 
+#         align="justify",
+#         selectizeInput("which_dep2",
+#                        "Sélectionne le département", 
+#                         choices = c("01","02","03","04","05","06","07","08","09",10:19,"2A","2B",21:95),
+#                         selected =  "2"
+#         ),
+#         amChartsOutput(outputId = "boxplot_box2")
+#     )
+#   )
+# )
 
 ## page regression
 bregression <- fluidRow(
+    # premiere colonne comportant le choix de la regression et l'interpretation des resultats
     column(
         width = 6,
         box(
@@ -199,7 +196,7 @@ bregression <- fluidRow(
                         selected = "Criminalité"
             ),
             selectizeInput("which_var_reg",
-                        "Sélectionne les variables que tu souhaites utiliser pour la régression", 
+                        "Sélectionne les variables que tu souhaites utiliser ", 
                         choices = c("Nb_delits_100000hab","Salaire_median","Tx_pauvrete_seuil60","Taux_chomage_moyen","Part_non_diplome","Indice_gini"),
                         multiple = TRUE,
                         selected = c("Nb_delits_100000hab","Salaire_median","Tx_pauvrete_seuil60","Taux_chomage_moyen","Part_non_diplome","Indice_gini")
@@ -207,48 +204,54 @@ bregression <- fluidRow(
             actionButton("button_reg", "OK" )
         ),
         box(
-            title = tagList(shiny::icon("pencil-alt"), "  Interprétation des résultats"), 
-            width = NULL,
-            status = "purple", 
-            solidHeader = TRUE, 
-            collapsible = TRUE, 
-            align="justify",
-            "
-            Primi igitur omnium statuuntur Epigonus et Eusebius ob nominum gentilitatem oppressi. 
-            praediximus enim Montium sub ipso vivendi termino his vocabulis appellatos fabricarum culpasse 
-            tribunos ut adminicula futurae molitioni pollicitos.
-            Haec igitur prima lex amicitiae sanciatur, ut ab amicis honesta petamus, 
-            amicorum causa honesta faciamus, ne exspectemus quidem, dum rogemur; studium semper adsit, 
-            cunctatio absit; consilium vero dare audeamus libere. Plurimum in amicitia amicorum bene suadentium
-            valeat auctoritas, eaque et adhibeatur ad monendum non modo aperte sed etiam acriter, 
-            si res postulabit, et adhibitae pareatur.
-            Illud tamen te esse admonitum volo, primum ut qualis es talem te esse omnes existiment ut, 
-            quantum a rerum turpitudine abes, tantum te a verborum libertate seiungas; 
-            deinde ut ea in alterum ne dicas, quae cum tibi falso responsa sint, erubescas. 
-            Quis est enim, cui via ista non pateat, qui isti aetati atque etiam isti dignitati non possit 
-            quam velit petulanter, etiamsi sine ulla suspicione, at non sine argumento male dicere? 
-            Sed istarum partium culpa est eorum, qui te agere voluerunt; laus pudoris tui, 
-            quod ea te invitum dicere videbamus, ingenii, quod ornate politeque dixisti.
-            "
+          title = tagList(icon("pencil-alt"), "  Interprétation des résultats"), 
+          width = NULL,
+          status = "purple", 
+          solidHeader = TRUE, 
+          collapsible = TRUE, 
+          align="justify",
+          h3("Summary"),
+          icon("exclamation-triangle"), "Les résultats obtenus sont ceux issus d'une régression linéaire 
+          sans vérification des conditions nécessaires pour une juste interprétation des résultats.
+          L'interprétation des résultats ci-dessous est surtout pour expliquer comment interpréter
+          la sortie R.", br(), br(),
+          "La qualité d’ajustement (R2 ajusté) du modèle vaut", textOutput("r2", inline = TRUE), ".",
+          "C’est-à-dire que", textOutput("r2x100", inline = TRUE) , "% de la variance du nombre de délits pour 100 000 habitants est expliquée par le modèle
+          (donc par les variables suivantes :", textOutput("x", inline = TRUE), ")", br(),
+          " Le test de Fisher teste la qualité globale du modèle. L’hypothèse nulle H0 teste la nullité de tous les coefficients, sauf la constante, contre l’hypothèse alternative H1 au moins un des coefficients est non nul. 
+              Ici, la statistique du test vaut", textOutput("fstat", inline = TRUE), "et la p-value est égale à", textOutput("pval_fisher", inline = TRUE),
+          "donc (inférieure/supérieure) à 0.05 alors (on rejette/on ne rejette pas) H0 au seuil de 5%. 
+              Le modèle est globalement satisfaisant puisqu’il est mieux avec les variables, que sans (inverse si on ne rejette pas).", br(),
+          " Au seuil de significativité de (en fonction du nb d’asterisque)%, lorsque le",textOutput("var_coef", inline = TRUE), 
+          "augmente d’une unité alors le nombre de délits pour 100 000 habitants(arrondi de Estimate) unités.
+          ",
+          h3("Plots"),
+          "
+          Dans cet onglet est généré la Heatmap des corrélations entre les variables du modèle.
+          Lorsque l'on clique sur une des cases, un deuxième graphique apparaît en dessous.
+          Il représente le nuage de points des 2 variables en questions et calcule la droite de régression associé à un modèle linéaire.
+          ", br(),
+          icon("exclamation-triangle"), "Attention, le graphe de corrélation ne permet pas d'affirmer un lien de causalité entre les variables. Les indicateurs de corrélations aident à formaliser le modèle mais on ne peut pas parler de lien de causalité."
         )
     ),
+    # deuxieme colonne resultats
     column(
         width = 6,
         tabBox(
-            title = tagList(shiny::icon("calculator"), "  Résultats"), 
+            title = tagList(icon("calculator"), "  Résultats"), 
             width = NULL,
             status = "purple", 
-            # solidHeader = TRUE, 
             collapsible = TRUE, 
-            # align="justify",
             id = "tabset1" ,
             side = "right",
             tabPanel("Summary",
-              "Bla bla"
+              verbatimTextOutput(outputId = "res_reg")
             ),
             tabPanel("Plots",
-              "Blabla",
-              plotlyOutput(outputId ="corr"),
+              icon("info-circle"), 
+              "Cliquez sur la heatmap pour faire apparaître le nuage de points des variables correspondantes
+              avec la droite de régression (modèle linéaire).",
+              plotlyOutput(outputId ="corr"), br(),
               plotlyOutput("scatterplot")
             )
         )
