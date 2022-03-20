@@ -343,7 +343,8 @@ Nous avons décidé d'exclure le salaire médian de notre analyse puisque celui-
 ```{r}
 ## regression
 lm_criminalite <- lm(Nb_delits_100000hab ~  Tx_pauvrete_seuil60 + Taux_chomage_moyen + Part_non_diplome + Indice_gini, data=criminalite_homicide)
-summary(lm_criminalite)
+summary <- summary(lm_criminalite)
+summary
 
 plot(lm_criminalite)
 ```
