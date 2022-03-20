@@ -6,6 +6,7 @@ library(DT)
 library(chartjs)
 library(leaflet)
 library(RColorBrewer)
+library(rAmCharts)
 
 # code dans le fichier "traitements_donnees" pour sauvegarder les donnees traitees et pouvoir les utiliser directement dans shiny
 # save(delits_fr_2016_final,homicide_final,cambriolage_final, file="www/donnees_criminalite.RData")
@@ -92,6 +93,7 @@ bcarte <- fluidPage(
                                 "Homicide" = "criminalite_homicide"),
                     selected = "Criminalité"
         ),
+        amChartsOutput(outputId = "graph_map")
       ),
       # on met le panneau de controle devant la map (z-index), 
       # on modifie la transparence puis la couleur, la forme et les espacements

@@ -11,6 +11,7 @@ library(sf)
 library(sp)
 library(foreign)
 library(raster)
+library(rAmCharts)
 
 ## on recupere les donnees stockees au prealable
 load("www/donnees_criminalite.RData")
@@ -63,11 +64,13 @@ shinyServer(function(input, output) {
   ## carte pour la visualisation des donnees
   output$map <- renderLeaflet({
     
+    # jointure des donnees geometriques pour les delimitations des departements avec nos donnees
     donnees_sf <- objet %>% left_join(get(input$which_map), by=c("CC_2" = "Departement"))
     
-    pal <- colorNumeric(scales::seq_gradient_pal(low = "yellow", high = "red",
+    # palette de couleur 
+    pal <- colorNumeric(scales::seq_gradient_pal(low = "#e4c9cf", high = "#5b2d36",
                                                  space = "Lab"), domain = donnees_sf$Nb_delits_100000hab)
-    
+    # on genere la carte
     leaflet() %>%  
       addProviderTiles("OpenStreetMap.Mapnik") %>%
       setView(lng = 15, lat = 46.80, zoom = 5) %>% 
@@ -79,5 +82,33 @@ shinyServer(function(input, output) {
                   highlightOptions = highlightOptions(color = "black", weight = 3,bringToFront = TRUE)) %>% 
       addLayersControl(options=layersControlOptions(collapsed = FALSE))
   })
+  
+  ## graphiques de la page carte
+  # on recupere les donnees
+  data <- reactive({
+    input$which_map
+  })
+  # on genere le boxplot
+  output$graph_map <- renderAmCharts({
+    amBoxplot(object = get(data())$Nb_delits_100000hab, 
+              main = paste("Boxplot du nombre de délits pour 100 000 habitants \n", "(table ",data(), ")"),
+              xlab = data(),
+              ylab = "Nombre pour 100 000 habitants",
+              col = "#6faf5f"
+              )
+  })
+  
+  # if (data() == "criminalite_cambriolage" | data() == "criminalite_homicide"){
+  #   output$graph_map <- renderAmCharts({
+  #     # on genere le boxplot
+  #     amBoxplot(object = get(data())$Nb_delits_100000hab)
+  #   })
+  # } else{
+  #   output$graph_map <- renderAmCharts({
+  #     # on genere le boxplot
+  #     amBoxplot(object = get(data())$Nb_delits_100000hab)
+  #   })
+  # }
+  # 
   
 })
