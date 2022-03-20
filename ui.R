@@ -157,23 +157,22 @@ bregression <- fluidRow(
             solidHeader = TRUE, 
             collapsible = TRUE, 
             align="justify",
-            "
-            Primi igitur omnium statuuntur Epigonus et Eusebius ob nominum gentilitatem oppressi. 
-            praediximus enim Montium sub ipso vivendi termino his vocabulis appellatos fabricarum culpasse 
-            tribunos ut adminicula futurae molitioni pollicitos.
-            Haec igitur prima lex amicitiae sanciatur, ut ab amicis honesta petamus, 
-            amicorum causa honesta faciamus, ne exspectemus quidem, dum rogemur; studium semper adsit, 
-            cunctatio absit; consilium vero dare audeamus libere. Plurimum in amicitia amicorum bene suadentium
-            valeat auctoritas, eaque et adhibeatur ad monendum non modo aperte sed etiam acriter, 
-            si res postulabit, et adhibitae pareatur.
-            Illud tamen te esse admonitum volo, primum ut qualis es talem te esse omnes existiment ut, 
-            quantum a rerum turpitudine abes, tantum te a verborum libertate seiungas; 
-            deinde ut ea in alterum ne dicas, quae cum tibi falso responsa sint, erubescas. 
-            Quis est enim, cui via ista non pateat, qui isti aetati atque etiam isti dignitati non possit 
-            quam velit petulanter, etiamsi sine ulla suspicione, at non sine argumento male dicere? 
-            Sed istarum partium culpa est eorum, qui te agere voluerunt; laus pudoris tui, 
-            quod ea te invitum dicere videbamus, ingenii, quod ornate politeque dixisti.
-            "
+              "
+              Nous allons interpréter la régression de la base (nom de la base choisie par l'utilisateur). 
+              ", br(),
+              "
+              La qualité d’ajustement du modèle R2 vaut (Ajusted R-squared). 
+              C’est-à-dire que (Ajusted R-squared*100)% de la variance du nombre (nom de la base) pour 100 000 habitants est expliquée par le modèle donc par les variables suivantes : (le nom des x variables explicatives). 
+              ", br(),
+              "
+              Le test de Fisher teste la qualité globale du modèle. 
+              L’hypothèse nulle H0 teste la nullité de tous les coefficients, sauf la constante, contre l’hypothèse alternative H1 au moins un des coefficients est non nul. 
+              Ici, la statistique du test vaut (F-statistic) et la p-value est égale à (p-value) donc (inférieure/supérieure) à 0.05 alors (on rejette/on ne rejette pas) H0 au seuil de 5%. 
+              Le modèle est globalement satisfaisant puisqu’il est mieux avec les variables, que sans (inverse si on ne rejette pas).
+              ", br(),
+              "
+              Au seuil de significativité de (en fonction du nb d’asterisque)%, lorsque le (nom de la variable) augmente d’une unité alors le nombre de (nom de la base) pour 100 000 habitants(arrondi de Estimate) unités. 
+              "
         )
     ),
     column(
