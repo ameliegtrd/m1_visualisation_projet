@@ -32,7 +32,7 @@ baccueil <- fluidRow(
                   width = NULL,
                   status="maroon",solidHeader = FALSE, align="justify",
                   title = "Base totale",
-                  "Cette base comprend tous les déterminants de tous les délits recensés en France métropolitaine en 2016."
+                  "Cette base comprend les déterminants de tous les délits recensés en France métropolitaine en 2016."
                   
                 ),
                 box(
@@ -62,7 +62,7 @@ baccueil <- fluidRow(
                   title = "Cambriolage",
                   "Les données relatives aux cambriolages désignent la violation de lieu privé, l'entrée dans un lieu sans autorisation, généralement par effraction, dans l'intention d'y commettre un vol.
           Cet indicateur additionne les cambriolages de résidences principales et les cambriolages de résidences secondaires car ces deux types d’infractions relèvent des mêmes modes opératoires.
-          Les infractions de tentatives de cambriolages sont également enregistrées dans cet indicateur"
+          Les infractions de tentatives de cambriolages sont également enregistrées dans cet indicateur."
                 ),
                 
           
