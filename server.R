@@ -166,12 +166,12 @@ shinyServer(function(input, output) {
       align = "justify",
       title = tagList(icon("exclamation-triangle")," Attention"),
       style = "color : red;",
-      "Nous avons appliqué une régression linéaire avec le modèle que vous avez choisit.
+      "Nous avons appliqué une régression linéaire avec le modèle que vous avez choisi.
       Cependant, nous n'avons pas vérifié s'il est bien spécifié (test de Ramsey), 
-      s'il n'y a pas de problème d'autocorrélation (test de Durbin-Watson) et 
+      s'il n'y a pas de problème d'autocorrélation (test de Durbin-Watson) ni 
       d'hétéroscédasticité (test de White). 
-      Ainsi, les résultats concernant la régression linéaire avec le modèle que vous avez choisis
-      sont les résultats sans correction s'il était nécéssaire.", br(),
+      Ainsi, les résultats concernant la régression linéaire avec le modèle que vous avez choisi
+      sont les résultats sans correction.", br(),
       easyClose = TRUE,
       footer = "Nous vous invitons à être prudent à l'égard des résultats obtenus."
     ))
