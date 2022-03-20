@@ -12,6 +12,8 @@ library(sp)
 library(foreign)
 library(raster)
 library(rAmCharts)
+library(ggcorrplot)
+library(plotly)
 
 ## on recupere les donnees stockees au prealable
 load("www/donnees_criminalite.RData")
@@ -98,17 +100,54 @@ shinyServer(function(input, output) {
               )
   })
   
-  # if (data() == "criminalite_cambriolage" | data() == "criminalite_homicide"){
-  #   output$graph_map <- renderAmCharts({
-  #     # on genere le boxplot
-  #     amBoxplot(object = get(data())$Nb_delits_100000hab)
-  #   })
-  # } else{
-  #   output$graph_map <- renderAmCharts({
-  #     # on genere le boxplot
-  #     amBoxplot(object = get(data())$Nb_delits_100000hab)
-  #   })
-  # }
-  # 
+  ## regression 
+  # on recupere le choix de table de l'utilisateur 
+  tab <- reactive({
+    input$which_tab_reg
+  })
+  # on genere les donnees issues du choix de la table et des variables de l'utilisateur
+  data.react <- eventReactive(
+    input$button_reg, {
+      get(tab())[,input$which_var_reg]
+  })
   
+  ## resultats regression
+  
+  ## corrplot et scatterplot page regression
+  # la heatmap
+  output$corr <- renderPlotly({
+    matcorr <- data.react()
+    # matrice de correlation
+    mcor <- cor(matcorr) 
+    # pour ne garder que le triangle superieur de la matrice (car symetrique)
+    mcor[upper.tri(mcor)] <- NA
+    # la heatmap
+    plot_ly(source = "heat_plot") %>% 
+      add_heatmap(
+        x = colnames(matcorr), 
+        y = colnames(matcorr), 
+        z = mcor
+      )
+  })
+  # le scatterplot en fonction du clique sur la heatmap    
+  output$scatterplot <- renderPlotly({
+    # si on ne clique par sur la heatmap, renvoie rien
+    clickData <- event_data("plotly_click", source = "heat_plot")
+    if (is.null(clickData)) return(NULL)
+    
+    # droite de regression avec les variables x/y cliquees sur la heatmap
+    vars <- c(clickData[["x"]], clickData[["y"]])
+    d <- setNames(matcorr[vars], c("x", "y"))
+    yhat <- fitted(lm(y ~ x, data = d))
+    
+    # nuage de points avec ligne d'ajustement (modele lineaire)
+    plot_ly(d, x = ~x) %>%
+      add_markers(y = ~y) %>%
+      add_lines(y = ~yhat) %>%
+      layout(
+        xaxis = list(title = clickData[["x"]]), 
+        yaxis = list(title = clickData[["y"]]), 
+        showlegend = FALSE
+      )
+  })
 })

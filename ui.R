@@ -7,63 +7,54 @@ library(chartjs)
 library(leaflet)
 library(RColorBrewer)
 library(rAmCharts)
+library(plotly)
 
 # code dans le fichier "traitements_donnees" pour sauvegarder les donnees traitees et pouvoir les utiliser directement dans shiny
 # save(delits_fr_2016_final,homicide_final,cambriolage_final, file="www/donnees_criminalite.RData")
 
+df_list <- list("criminalite", "criminalite_homicide", "criminalite_cambriolage")
 
 ### CONTENU DES PAGES
 ## page d'accueil
 baccueil <- fluidPage(
-box(
-    title ="Présentation des données", 
-    status = "info", 
-    solidHeader = TRUE, 
-    width = 12,
-    collapsible = TRUE, 
-    align="justify",
-    "
+    box(
+        title ="Présentation des données", 
+        status = "info", 
+        solidHeader = TRUE, 
+        width = 12,
+        collapsible = TRUE, 
+        align="justify",
+        "
        L’objectif de cette application est de présenter à l‘utilisateur une interface qui lui permet d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
         ", br(), 
-    "
+        "
        L'utilisateur aura le choix de prendre une base parmi les quatre proposées ci-dessous :
-        ", br(), br(),
-    column(width=6,
-    box(title ="Base totale",
-        status="primary",
-        solidHeader = TRUE,
-        align="left",
-        "Cette base comprend tous les déterminants de tous les délits recensés en France métropolitaine en 2016. 
-        "), 
-    box(title ="Criminalité",
-        status="primary",
-        solidHeader = TRUE,
-        align="left",
-        "Cette base se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. 
+        ", br(),
+        "
+       - Base totale : Cette base comprend tous les déterminants de tous les délits recensés en France métropolitaine en 2016. 
+        ", br(), 
+        "
+       - Criminalité : Cette base se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. 
        Ici, nous avons conservé 8 variables expliquant la criminalité par département (cf le dictionnaire de données dans le Rapport).
-        ")),  
-    column(width=6,
-    box(title ="Cambriolage",
-        status="primary",
-        solidHeader = TRUE,
-        align="left",
-      "Les données relatives aux cambriolages désignent la violation de lieu privé, l'entrée dans un lieu sans autorisation, généralement par effraction, dans l'intention d'y commettre un vol.
+        ", br(), 
+        "
+       - Cambriolage : Les données relatives aux cambriolages désignent la violation de lieu privé, l'entrée dans un lieu sans autorisation, généralement par effraction, dans l'intention d'y commettre un vol.
        Cet indicateur additionne les cambriolages de résidences principales et les cambriolages de résidences secondaires car ces deux types d’infractions relèvent des mêmes modes opératoires.
        Les infractions de tentatives de cambriolages sont également enregistrées dans cet indicateur.
-        "), 
-    box(title ="Homicide",
-        status="primary",
-        solidHeader = TRUE,
-        align="left", 
-      "Cette base regroupe les 4 catégories de crimes suivantes :",
-    br(), "- les règlements de comptes entre malfaiteurs",
-    br(), "- les homicides pour voler et à l’occasion de vols",
-    br(), "- les homicides pour d’autres motifs",
-    br(), "- les coups et blessures volontaires suivis de mort",
-    br(), "Même si les coups et blessures volontaires suivis de mort ne sont pas des homicides au sens juridique, nous avons décidé de les intégrer dans cet indicateur.
+        ", br(), 
+        "
+       - Homicide : Cette base regroupe les 4 catégories de crimes suivantes :",
+        br(), "- les règlements de comptes entre malfaiteurs",
+        br(), "- les homicides pour voler et à l’occasion de vols",
+        br(), "- les homicides pour d’autres motifs",
+        br(), "- les coups et blessures volontaires suivis de mort",
+        br(), "Même si les coups et blessures volontaires suivis de mort ne sont pas des homicides au sens juridique, nous avons décidé de les intégrer dans cet indicateur.
        Un homicide est l'action de tuer un autre être humain, qu’elle soit volontaire ou non.
-        "))
-  ),
+        ", br(),
+        "
+        METTRE LES TITRES DES 4 BASES EN GRAS ET METTRE UN ALINÉA DEVANT LES 4 TYPES D'HOMICIDES
+        "
+    ),
     box(
         title ="Nos données", 
         status = "purple", 
@@ -74,9 +65,9 @@ box(
         selectInput("which_data", 
                     "Sélectionne la table que tu souhaites voir", 
                     choices = c("Tout" = "delits_fr_2016_final",
-                                "Criminalité" = "criminalite",
-                                "Cambriolage" = "criminalite_cambriolage",
-                                "Homicide" = "criminalite_homicide"),
+                                "Criminalité" = df_list[1],
+                                "Cambriolage" = df_list[3],
+                                "Homicide" = df_list[2]),
                     selected = "Tout"
         ),
         DT::dataTableOutput("DTtable")
@@ -99,9 +90,9 @@ bcarte <- fluidPage(
       wellPanel(
         selectInput("which_map",
                     "Sélectionne les données que tu souhaites représenter", 
-                    choices = c("Criminalité" = "criminalite",
-                                "Cambriolage" = "criminalite_cambriolage",
-                                "Homicide" = "criminalite_homicide"),
+                    choices = c("Criminalité" = df_list[1],
+                                "Cambriolage" = df_list[3],
+                                "Homicide" = df_list[2]),
                     selected = "Criminalité"
         ),
         amChartsOutput(outputId = "graph_map")
@@ -132,6 +123,28 @@ bregression <- fluidRow(
             solidHeader = TRUE, 
             collapsible = TRUE, 
             align="justify",
+            selectInput("which_tab_reg",
+                        "Sélectionne les données que tu souhaites utiliser ", 
+                        choices = c("Criminalité" = df_list[1],
+                                    "Cambriolage" = df_list[3],
+                                    "Homicide" = df_list[2]),
+                        selected = "Criminalité"
+            ),
+            selectizeInput("which_var_reg",
+                        "Sélectionne les variables que tu souhaites utiliser pour la régression", 
+                        choices = c("Nb_delits_100000hab","Salaire_median","Tx_pauvrete_seuil60","Taux_chomage_moyen","Part_non_diplome","Indice_gini"),
+                        multiple = TRUE,
+                        selected = c("Nb_delits_100000hab","Salaire_median","Tx_pauvrete_seuil60","Taux_chomage_moyen","Part_non_diplome","Indice_gini")
+            ),
+            actionButton("button_reg", "OK" )
+        ),
+        box(
+            title = tagList(shiny::icon("pencil-alt"), "  Interprétation des résultats"), 
+            width = NULL,
+            status = "purple", 
+            solidHeader = TRUE, 
+            collapsible = TRUE, 
+            align="justify",
             "
             Primi igitur omnium statuuntur Epigonus et Eusebius ob nominum gentilitatem oppressi. 
             praediximus enim Montium sub ipso vivendi termino his vocabulis appellatos fabricarum culpasse 
@@ -149,30 +162,6 @@ bregression <- fluidRow(
             Sed istarum partium culpa est eorum, qui te agere voluerunt; laus pudoris tui, 
             quod ea te invitum dicere videbamus, ingenii, quod ornate politeque dixisti.
             "
-        ),
-        box(
-            title = tagList(shiny::icon("pencil-alt"), "  Interprétation des résultats"), 
-            width = NULL,
-            status = "purple", 
-            solidHeader = TRUE, 
-            collapsible = TRUE, 
-            align="justify",
-              "
-              Nous allons interpréter la régression de la base (nom de la base choisie par l'utilisateur). 
-              ", br(),
-              "
-              La qualité d’ajustement du modèle R2 vaut (Ajusted R-squared). 
-              C’est-à-dire que (Ajusted R-squared*100)% de la variance du nombre (nom de la base) pour 100 000 habitants est expliquée par le modèle donc par les variables suivantes : (le nom des x variables explicatives). 
-              ", br(),
-              "
-              Le test de Fisher teste la qualité globale du modèle. 
-              L’hypothèse nulle H0 teste la nullité de tous les coefficients, sauf la constante, contre l’hypothèse alternative H1 au moins un des coefficients est non nul. 
-              Ici, la statistique du test vaut (F-statistic) et la p-value est égale à (p-value) donc (inférieure/supérieure) à 0.05 alors (on rejette/on ne rejette pas) H0 au seuil de 5%. 
-              Le modèle est globalement satisfaisant puisqu’il est mieux avec les variables, que sans (inverse si on ne rejette pas).
-              ", br(),
-              "
-              Au seuil de significativité de (en fonction du nb d’asterisque)%, lorsque le (nom de la variable) augmente d’une unité alors le nombre de (nom de la base) pour 100 000 habitants(arrondi de Estimate) unités. 
-              "
         )
     ),
     column(
@@ -190,7 +179,9 @@ bregression <- fluidRow(
               "Bla bla"
             ),
             tabPanel("Plots",
-              "Blabla"
+              "Blabla",
+              plotlyOutput(outputId ="corr"),
+              plotlyOutput("scatterplot")
             )
         )
     )
