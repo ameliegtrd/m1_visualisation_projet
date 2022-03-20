@@ -100,6 +100,41 @@ shinyServer(function(input, output) {
               )
   })
   
+   ## boxplots pour la comparaison des departements
+  # on recupere les donnees
+  bdd <- reactive({
+    input$which_bdd
+  })
+  
+  ##boxplot1
+  bdd.react <- eventReactive(
+    input$button_boxp, {
+      get(bdd())[,input$which_dep1]
+    })
+  # on genere le boxplot1
+  output$boxplot_box1 <- renderAmCharts({
+    amBoxplot(object = get(bdd())[input$which_dep1,]$Nb_delits_100000hab, 
+              main = paste("Boxplot du nombre de cambriolages pour 100 000 habitants \n", "(table ",bdd(), ")"),
+              xlab = bdd(),
+              ylab = "Nombre pour 100 000 habitants",
+              col = "#6faf5f"
+    )
+  })
+  
+  ##boxplot2
+  bdd.react <- eventReactive(
+    input$button_boxp, {
+      get(bdd())[,input$which_dep2]
+    })
+  # on genere le boxplot2
+  output$boxplot_box2 <- renderAmCharts({
+    amBoxplot(object = get(bdd())[input$which_dep2,]$Nb_delits_100000hab, 
+              main = paste("Boxplot du nombre de cambriolages pour 100 000 habitants \n", "(table ",bdd(), ")"),
+              xlab = bdd(),
+              ylab = "Nombre pour 100 000 habitants",
+              col = "#6faf5f"
+    )
+  })
   ## regression 
   # on recupere le choix de table de l'utilisateur 
   tab <- reactive({
