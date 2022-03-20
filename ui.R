@@ -107,10 +107,78 @@ bcarte <- fluidPage(
 )
     
 ## page statistiques
-bstats_desc <- chartjs(height = "200px") %>% 
-    cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
-    cjsDoughnut(labels = LETTERS[1:4]) %>%
-    cjsSeries(data = c(1:4))
+bstats_desc <- fluidRow(box(
+                            title ="Choix de la table", 
+                            status = "info", 
+                            solidHeader = TRUE, 
+                            width = 12,
+                            collapsible = TRUE, 
+                            align="justify",
+  selectInput("which_bdd", 
+              "Sélectionne la table que tu souhaites voir", 
+              choices = c("Criminalité" = "criminalite",
+                          "Cambriolage" = "criminalite_cambriolage",
+                          "Homicide" = "criminalite_homicide"),
+              selected = "Criminalité"
+  )
+  
+),
+  column(
+    width = 6,
+    box(title ="Département 1", 
+      status = "info", 
+      solidHeader = TRUE, 
+      width = 12,
+      collapsible = TRUE, 
+      align="justify",
+      selectizeInput("which_dep1",
+                 "Sélectionne le département", 
+                 choices = c("1", "2","3","4","5", "6","7","8", "9","10",
+                             "11", "12", "13", "14", "15", "16", "17", "18", "19", "2A", "2B",
+                             "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+                             "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+                             "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
+                             "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
+                             "61", "62", "63", "64", "65", "66", "67", "68", "69", "70",
+                             "71", "72", "73", "74", "75", "76", "77", "78", "79", "80",
+                             "81", "82", "83", "84", "85", "86", "87", "88", "89", "90",
+                             "91", "92", "93", "94", "95"),
+                 selected = "1"
+  ),
+  amChartsOutput(outputId = "boxplot_box1")),
+  ),
+
+column(width = 6,
+      box(title ="Département 2", 
+          status = "info", 
+          solidHeader = TRUE, 
+          width = 12,
+          collapsible = TRUE, 
+          align="justify",
+          selectizeInput("which_dep2",
+                         "Sélectionne le département", 
+                         choices = c("1", "2","3","4","5", "6","7","8", "9","10",
+                                     "11", "12", "13", "14", "15", "16", "17", "18", "19", "2A", "2B",
+                                     "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+                                     "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+                                     "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
+                                     "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
+                                     "61", "62", "63", "64", "65", "66", "67", "68", "69", "70",
+                                     "71", "72", "73", "74", "75", "76", "77", "78", "79", "80",
+                                     "81", "82", "83", "84", "85", "86", "87", "88", "89", "90",
+                                     "91", "92", "93", "94", "95"),
+                         selected =  "2"
+          ),
+          amChartsOutput(outputId = "boxplot_box2"))
+  
+         
+  )
+  
+)
+#bstats_desc <- chartjs(height = "200px") %>% 
+#    cjsOptions(animation = list(animateScale = TRUE, animateRotate = FALSE)) %>%
+ #   cjsDoughnut(labels = LETTERS[1:4]) %>%
+#    cjsSeries(data = c(1:4))
 
 ## page regression
 bregression <- fluidRow(
