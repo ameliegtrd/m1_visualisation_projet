@@ -15,44 +15,55 @@ library(rAmCharts)
 ### CONTENU DES PAGES
 ## page d'accueil
 baccueil <- fluidPage(
-    box(
-        title ="Présentation des données", 
-        status = "info", 
-        solidHeader = TRUE, 
-        width = 12,
-        collapsible = TRUE, 
-        align="justify",
-        "
+box(
+    title ="Présentation des données", 
+    status = "info", 
+    solidHeader = TRUE, 
+    width = 12,
+    collapsible = TRUE, 
+    align="justify",
+    "
        L’objectif de cette application est de présenter à l‘utilisateur une interface qui lui permet d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
         ", br(), 
-        "
+    "
        L'utilisateur aura le choix de prendre une base parmi les quatre proposées ci-dessous :
-        ", br(),
-        "
-       - Base totale : Cette base comprend tous les déterminants de tous les délits recensés en France métropolitaine en 2016. 
-        ", br(), 
-        "
-       - Criminalité : Cette base se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. 
+        ", br(), br(),
+    column(width=6,
+    box(title ="Base totale",
+        status="primary",
+        solidHeader = TRUE,
+        align="left",
+        "Cette base comprend tous les déterminants de tous les délits recensés en France métropolitaine en 2016. 
+        "), 
+    box(title ="Criminalité",
+        status="primary",
+        solidHeader = TRUE,
+        align="left",
+        "Cette base se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. 
        Ici, nous avons conservé 8 variables expliquant la criminalité par département (cf le dictionnaire de données dans le Rapport).
-        ", br(), 
-        "
-       - Cambriolage : Les données relatives aux cambriolages désignent la violation de lieu privé, l'entrée dans un lieu sans autorisation, généralement par effraction, dans l'intention d'y commettre un vol.
+        ")),  
+    column(width=6,
+    box(title ="Cambriolage",
+        status="primary",
+        solidHeader = TRUE,
+        align="left",
+      "Les données relatives aux cambriolages désignent la violation de lieu privé, l'entrée dans un lieu sans autorisation, généralement par effraction, dans l'intention d'y commettre un vol.
        Cet indicateur additionne les cambriolages de résidences principales et les cambriolages de résidences secondaires car ces deux types d’infractions relèvent des mêmes modes opératoires.
        Les infractions de tentatives de cambriolages sont également enregistrées dans cet indicateur.
-        ", br(), 
-        "
-       - Homicide : Cette base regroupe les 4 catégories de crimes suivantes :",
-        br(), "- les règlements de comptes entre malfaiteurs",
-        br(), "- les homicides pour voler et à l’occasion de vols",
-        br(), "- les homicides pour d’autres motifs",
-        br(), "- les coups et blessures volontaires suivis de mort",
-        br(), "Même si les coups et blessures volontaires suivis de mort ne sont pas des homicides au sens juridique, nous avons décidé de les intégrer dans cet indicateur.
+        "), 
+    box(title ="Homicide",
+        status="primary",
+        solidHeader = TRUE,
+        align="left", 
+      "Cette base regroupe les 4 catégories de crimes suivantes :",
+    br(), "- les règlements de comptes entre malfaiteurs",
+    br(), "- les homicides pour voler et à l’occasion de vols",
+    br(), "- les homicides pour d’autres motifs",
+    br(), "- les coups et blessures volontaires suivis de mort",
+    br(), "Même si les coups et blessures volontaires suivis de mort ne sont pas des homicides au sens juridique, nous avons décidé de les intégrer dans cet indicateur.
        Un homicide est l'action de tuer un autre être humain, qu’elle soit volontaire ou non.
-        ", br(),
-        "
-        METTRE LES TITRES DES 4 BASES EN GRAS ET METTRE UN ALINÉA DEVANT LES 4 TYPES D'HOMICIDES
-        "
-    ),
+        "))
+  ),
     box(
         title ="Nos données", 
         status = "purple", 
