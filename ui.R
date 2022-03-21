@@ -167,7 +167,7 @@ bregression <- fluidRow(
       " Le test de Fisher teste la qualité globale du modèle. L’hypothèse nulle H0 teste la nullité de tous les coefficients, sauf la constante, contre l’hypothèse alternative H1 au moins un des coefficients est non nul. 
               Ici, la statistique du test vaut", textOutput("fstat", inline = TRUE), "et la p-value est égale à", textOutput("pval_fisher", inline = TRUE),
       "donc (inférieure/supérieure) à 0.05 alors (on rejette/on ne rejette pas) H0 au seuil de 5%. 
-          ",
+          ", br(),
       h3("Plots"),
       "
           Dans cet onglet est généré la Heatmap des corrélations entre les variables du modèle.

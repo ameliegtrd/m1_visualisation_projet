@@ -13,7 +13,6 @@ library(rAmCharts)
 library(ggcorrplot)
 library(plotly)
 
-
 ## on recupere les donnees stockees au prealable
 load("www/donnees_criminalite.RData")
 load("www/objet_polygon.RData")
@@ -150,10 +149,6 @@ shinyServer(function(input, output) {
   output$r2x100 <- renderPrint({
     (lm_reg(data.react())$adj.r.squared)*100
   })
-  # Y var expliquee
-  output$y <- renderPrint({
-    lm_reg(data.react())$terms[[2]]
-  })
   # X var explicatives
   output$x <- renderPrint({
     lm_reg(data.react())$terms[[3]]
@@ -166,18 +161,6 @@ shinyServer(function(input, output) {
   output$pval_fisher <- renderPrint({
     summary <- lm_reg(data.react())
     pf(summary$fstatistic[1],summary$fstatistic[2],summary$fstatistic[3],lower.tail=FALSE)[[1]]
-  })
-  # nom de la variable du premier coefficient
-  output$var_coef <- renderPrint({
-    rownames(lm_reg(data.react())$coefficients)[2]
-  })
-  # coefficient associe a la premiere variable
-  output$coef <- renderPrint({
-    lm_reg(data.react())$coefficients[2,1]
-  })
-  # p-value du test de nullite sur le coefficient associe a la premiere variable
-  output$pval_coef <- renderPrint({
-    lm_reg(data.react())$coefficients[2,4]
   })
   
   ## corrplot et scatterplot 
