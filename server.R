@@ -13,6 +13,7 @@ library(rAmCharts)
 library(ggcorrplot)
 library(plotly)
 
+
 ## on recupere les donnees stockees au prealable
 load("www/donnees_criminalite.RData")
 load("www/objet_polygon.RData")
@@ -59,7 +60,8 @@ shinyServer(function(input, output) {
                  pageLength = 10,
                  scrollX = TRUE
                ) 
-    )) 
+    )
+  ) 
   
   ### cartographie
   ## carte pour la visualisation des donnees
@@ -210,7 +212,7 @@ shinyServer(function(input, output) {
       add_markers(y = ~y) %>%
       add_lines(y = ~yhat) %>%
       layout(
-        title = paste("Nuage de points entre",clickData[["x"]],"et",clickData[["y"]]) ,
+        title = paste("Nuage de points entre \n",clickData[["x"]],"et",clickData[["y"]]) ,
         xaxis = list(title = clickData[["x"]]), 
         yaxis = list(title = clickData[["y"]]), 
         showlegend = FALSE

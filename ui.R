@@ -1,4 +1,4 @@
-#### LIBRAIRIES
+### LIBRAIRIES
 library(shiny)
 library(bs4Dash)
 library(tidyverse)
@@ -7,9 +7,10 @@ library(leaflet)
 library(RColorBrewer)
 library(rAmCharts)
 library(plotly)
+library(shinyjs)
 
 # code dans le fichier "traitements_donnees" pour sauvegarder les donnees traitees et pouvoir les utiliser directement dans shiny
-# save(delits_fr_2016_final,homicide_final,cambriolage_final, file="www/donnees_criminalite.RData")
+# save(delits_fr_2016_final, criminalite, criminalite_cambriolage, criminalite_homicide, file="www/donnees_criminalite.RData")
 
 df_list <- list("criminalite", "criminalite_homicide", "criminalite_cambriolage")
 
@@ -23,61 +24,62 @@ baccueil <- fluidRow(
     width = 12,
     collapsible = TRUE, 
     align="justify",
-    "
-        L’objectif de cette application est de présenter à l‘utilisateur une interface qui lui permet d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
-        Les données sont issues de l'INSEE et on été traitées pour obtenir les bases de données qui seront utilisées dans cette application.", br(), 
-    "L'utilisateur pourra choisir une base parmi les quatres proposées ci-dessous : ", br(), 
-    column( width = 6,
-            box(
-              width = NULL,
-              status="maroon",solidHeader = FALSE, align="justify",
-              title = "Base totale",
-              "Cette base comprend les déterminants de tous les délits recensés en France métropolitaine en 2016."
-              
-            ),
-            box(
-              width = NULL,
-              status="maroon",solidHeader = FALSE,align="justify",
-              title = "Homicide",
-              "Cette base regroupe les 4 catégories de crimes suivantes :",
-              br(), "- les règlements de comptes entre malfaiteurs",
-              br(), "- les homicides pour voler et à l’occasion de vols",
-              br(), "- les homicides pour d’autres motifs",
-              br(), "- les coups et blessures volontaires suivis de mort",
-              br(), "Même si les coups et blessures volontaires suivis de mort ne sont pas des homicides au sens juridique, nous avons décidé de les intégrer dans cet indicateur.
-          Un homicide est l'action de tuer un autre être humain, qu’elle soit volontaire ou non."
-            )
+    "L’objectif de cette application est de présenter à l‘utilisateur une interface qui lui permet d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
+    Les données sont issues de l'INSEE et on été traitées pour obtenir les bases de données qui seront utilisées dans cette application.", br(), 
+    "L'utilisateur pourra choisir une base parmi les quatres proposées ci-dessous : ", br(), br(),
+    column(
+      width = 12,
+      box(
+        width = NULL,
+        status="maroon", solidHeader = TRUE,
+        align="justify", collapsible = TRUE, collapsed = TRUE,
+        title = "Base totale",
+        "Cette base comprend les déterminants de tous les délits recensés en France métropolitaine en 2016."
+      ),
+      box(
+        width = NULL,
+        status="maroon", solidHeader = TRUE, align="justify",
+        collapsible = TRUE, collapsed = TRUE,
+        title = "Criminalité",
+        "Cette base se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. 
+      Ici, nous avons conservé 8 variables expliquant la criminalité par département (cf le dictionnaire de données dans le Rapport)."
+      )     
     ),
-    column( width = 6,
-            box(
-              width = NULL,
-              status="maroon",solidHeader = FALSE,align="justify",
-              title = "Criminalité",
-              "Cette base se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. 
-          Ici, nous avons conservé 8 variables expliquant la criminalité par département (cf le dictionnaire de données dans le Rapport)."
-            ),
-            box(
-              width = NULL,
-              status="maroon",solidHeader = FALSE,align="justify",
-              title = "Cambriolage",
-              "Les données relatives aux cambriolages désignent la violation de lieu privé, l'entrée dans un lieu sans autorisation, généralement par effraction, dans l'intention d'y commettre un vol.
-          Cet indicateur additionne les cambriolages de résidences principales et les cambriolages de résidences secondaires car ces deux types d’infractions relèvent des mêmes modes opératoires.
-          Les infractions de tentatives de cambriolages sont également enregistrées dans cet indicateur."
-            ),
-            
-            
-    ),
-    "Bla bla"
+    column(
+      width = 12,
+      box(
+        width = NULL,
+        status="maroon", solidHeader = TRUE, align="justify",
+        collapsible = TRUE, collapsed = TRUE,
+        title = "Homicide",
+        "Cette base regroupe les 4 catégories de crimes suivantes :",
+        br(), "- les règlements de comptes entre malfaiteurs",
+        br(), "- les homicides pour voler et à l’occasion de vols",
+        br(), "- les homicides pour d’autres motifs",
+        br(), "- les coups et blessures volontaires suivis de mort",
+        br(), "Même si les coups et blessures volontaires suivis de mort ne sont pas des homicides au sens juridique, nous avons décidé de les intégrer dans cet indicateur.
+      Un homicide est l'action de tuer un autre être humain, qu’elle soit volontaire ou non."
+      ),
+      box(
+        width = NULL,
+        status="maroon", solidHeader = TRUE, align="justify",
+        collapsible = TRUE, collapsed = TRUE,
+        title = "Cambriolage",
+        "Les données relatives aux cambriolages désignent la violation de lieu privé, l'entrée dans un lieu sans autorisation, généralement par effraction, dans l'intention d'y commettre un vol.
+      Cet indicateur additionne les cambriolages de résidences principales et les cambriolages de résidences secondaires car ces deux types d’infractions relèvent des mêmes modes opératoires.
+      Les infractions de tentatives de cambriolages sont également enregistrées dans cet indicateur."
+      ),
+    )
   ),
   box(
-    title ="Nos données", 
-    status = "purple", 
-    solidHeader = TRUE, 
+    title ="Nos données",
+    status = "purple",
+    solidHeader = TRUE,
     width = 12,
-    collapsible = TRUE, 
+    collapsible = TRUE,
     align="justify",
-    selectInput("which_data", 
-                "Sélectionner la table souhaitée", 
+    selectInput("which_data",
+                "Sélectionner la table souhaitée",
                 choices = c("Tout" = "delits_fr_2016_final",
                             "Criminalité" = df_list[1],
                             "Cambriolage" = df_list[3],
@@ -161,13 +163,10 @@ bregression <- fluidRow(
           la sortie R.", br(), br(),
       "La qualité d’ajustement (R2 ajusté) du modèle vaut", textOutput("r2", inline = TRUE), ".",
       "C’est-à-dire que", textOutput("r2x100", inline = TRUE) , "% de la variance du nombre de délits pour 100 000 habitants est expliquée par le modèle
-          (donc par les variables suivantes :", textOutput("x", inline = TRUE), ")", br(),
+          (donc par les variables suivantes :", textOutput("x", inline = TRUE), ").", br(),
       " Le test de Fisher teste la qualité globale du modèle. L’hypothèse nulle H0 teste la nullité de tous les coefficients, sauf la constante, contre l’hypothèse alternative H1 au moins un des coefficients est non nul. 
               Ici, la statistique du test vaut", textOutput("fstat", inline = TRUE), "et la p-value est égale à", textOutput("pval_fisher", inline = TRUE),
       "donc (inférieure/supérieure) à 0.05 alors (on rejette/on ne rejette pas) H0 au seuil de 5%. 
-              Le modèle est globalement satisfaisant puisqu’il est mieux avec les variables, que sans (inverse si on ne rejette pas).", br(),
-      " Au seuil de significativité de (en fonction du nb d’asterisque)%, lorsque le",textOutput("var_coef", inline = TRUE), 
-      "augmente d’une unité alors le nombre de délits pour 100 000 habitants(arrondi de Estimate) unités.
           ",
       h3("Plots"),
       "
@@ -233,6 +232,8 @@ ui <- dashboardPage(
   
   ## contenu des pages
   dashboardBody(
+    useShinyjs(),
+    tags$link(rel = "stylesheet", type = "text/css", href = "www/style.css"),
     tabItems(
       # page donnees
       tabItem(tabName = "accueil", baccueil
