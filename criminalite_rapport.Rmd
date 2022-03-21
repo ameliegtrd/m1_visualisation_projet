@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE
 knitr::include_graphics(path=c("www/table_donnees.png", "www/carte.png", "www/regression.png"))
 ```
 
-**Nota Bene** : Ce rapport présente l'application Shiny (disponible [ici](https://ameliegtrd.shinyapps.io/criminalite/)). Le code Github correspondant est disponible [à cette adresse](https://github.com/ameliegtrd/m1_visualisation_projet). Si vous souhaitez l'executer, plusieurs packages sont unécéssaires pour faire fonctionner l'application. Par conséquent, le chargement peut prendre un peu de temps mais une fois que tous les packages sont installés l'application fonctionne. Elle a été testée sur différents ordinateurs, notamment ceux de l'Université.
+**Nota Bene** : Ce rapport présente l'application Shiny (disponible [ici](https://ameliegtrd.shinyapps.io/criminalite/)). Le code Github correspondant est disponible [à cette adresse](https://github.com/ameliegtrd/m1_visualisation_projet). Si vous souhaitez l'exécuter, plusieurs packages sont nécessaires pour faire fonctionner l'application. Par conséquent, le chargement peut prendre un peu de temps mais une fois que tous les packages sont installés l'application fonctionne. Elle a été testée sur différents ordinateurs, notamment ceux de l'Université.  
 
 # 1. Présentation du sujet 
 
@@ -79,7 +79,7 @@ Cette section présente dans un premier temps les différentes bases de données
 
 ### 3.1.2 Carte  
 Cette section représente le nombre de délits en France en 2016 par département sur une carte. L'utilisateur a le choix de la base de données (donc du type de criminalité) qu'il souhaite représenter. Il est possible d'obtenir la population du département ainsi que le nombdre délits pour 100 000 habitants en cliquant sur le département souhaité.  
-Aussi, est représenté le boxplot du nombre de délits correspondant à la table choisit pour tous les départements français.  
+Aussi, est représenté le boxplot du nombre de délits correspondant à la table choisie pour tous les départements français.  
 
 ![Section Carte](www/carte.png)
 
@@ -87,11 +87,11 @@ Aussi, est représenté le boxplot du nombre de délits correspondant à la tabl
 Cette section comporte 3 boxes.  
 La première, intutilée *"Choix de la régression"* permet à l'utilisateur de choisir la table de données ainsi que les variables qu'il souhaite intégrer dans son modèle linéaire afin d'établir la régression associée.  
 Le modèle prendra comme variable à expliquer Y le nombre de délits pour 100 000 habitants. Les variables explicatives au choix sont le taux de pauvreté au seuil de 60%, le taux de chômage moyen, la part de non diplômé, l'indice de Gini ainsi que le salaire médian.  
-Attention toutefois, le salaire médian diffère en fonction du département (ex : vie qui coûte plus chère à Paris donc salaires plus élevés) alors que l'indice de Gini mesure l'inégalité des revenus.  
+Attention toutefois, le salaire médian diffère en fonction du département (ex : la vie coûte plus cher à Paris donc les salaires sont plus élevés) alors que l'indice de Gini mesure l'inégalité des revenus.  
 Pour valider son choix, l'utilisateur appuie sur le bouton "OK". Une fenêtre pop-up apparaît ensuite pour l'avertir d'être prudent à l'égard des résultats issus de la régression linéaire. 
-En effet, nous avons appliqué une régression avec ajustement des Moindres Carrés Ordinaires (MCO) sans vérification des conditions nécessaires. Ainsi, nous supposons que la distribution suit une loi normale, que le modèle est bien spécifié et qu'il n'y pas de problème d'autoccorélation d'ordre 1 des aléas ni de problème d'hétéroscédasticité.  
+En effet, nous avons appliqué une régression avec ajustement des Moindres Carrés Ordinaires (MCO) sans vérification des conditions nécessaires. Ainsi, nous supposons que la distribution suit une loi normale, que le modèle est bien spécifié et qu'il n'y pas de problème d'autocorrélation d'ordre 1 des aléas ni de problème d'hétéroscédasticité.  
 
-Pour rappel, un modèle linéaire est définit par :  
+Pour rappel, un modèle linéaire est défini par :  
 *On considère deux variables* \(X\) *et * \(Y\) *et l'on dispose d'observations* ( \( x_i, Y_i \) ), \(i = 1, ..., n\). *Ecriture analytique : *   
 $$ Y_i = \beta_0 + \beta_1 \cdot x_i + \epsilon_i ,  \forall i =1,...,n $$ 
 *Hypothèses :*  
@@ -99,10 +99,10 @@ $$ Y_i = \beta_0 + \beta_1 \cdot x_i + \epsilon_i ,  \forall i =1,...,n $$
 - *Homoscédasticité : * \(  \mathbb{V}[\epsilon_i] = \sigma^2, \forall i \),  
 - *Décorrélation : * \( Cov(\epsilon_i, \epsilon_j) = 0, \forall i \neq j \)  
 
-La seconde boxe intitulée *"Interprétation des résultats"* guide l'utilisateur quant à l'interprétation des résultats obtenus.  
-Pour ce faire, nous avons rédigé des phrases types permettant d'interpréter le R^2, la statistique de Fisher et sa p-valeur associée. Les valeurs s'ajustent en fonction des résultats du summary obtenus par le modèle choisit.  
+La seconde box intitulée *"Interprétation des résultats"* guide l'utilisateur quant à l'interprétation des résultats obtenus.  
+Pour ce faire, nous avons rédigé des phrases types permettant d'interpréter le R², la statistique de Fisher et sa p-valeur associée. Les valeurs s'ajustent en fonction des résultats du summary obtenus par le modèle choisi.  
 
-Enfin, la toisième boxe *"Résultats"* affiche dans l'onglet "Summary" la sortie R associé au modèle de régression linéaire choisit. Dans l'onglet *"Plots"* est représentée la Heatmap affichant la matrice de corrélation pour les variables sélectionnées par l'utilisateur. En cliquant sur une case de celle-ci, apparaît en dessous le nuage de point des variables correspondantes avec la droite de régression du modèle linéaire.  
+Enfin, la troisième box *"Résultats"* affiche dans l'onglet "Summary" la sortie R associée au modèle de régression linéaire choisi. Dans l'onglet *"Plots"* est représentée la Heatmap affichant la matrice de corrélation pour les variables sélectionnées par l'utilisateur. En cliquant sur l'une de ses cases, le nuage de point des variables correspondantes ainsi que la droite de régression du modèle linéaire apparaissent en dessous.  
 
 ![Section Régression](www/regression.png)
 
