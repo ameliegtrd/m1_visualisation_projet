@@ -9,9 +9,7 @@ output:
     lightbox: true
     gallery: false
     highlight: tango
-    code_folding: show
   html_document:
-    code_folding: show
     theme: united
     highlight: tango
     toc: true
@@ -21,152 +19,33 @@ output:
 <style>body {text-align: justify}</style>
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE, include = FALSE)
+knitr::include_graphics(path=c("www/table_donnees.png", "www/carte.png", "www/regression.png"))
 ```
 
-**Nota Bene** : Si vous le souhaitez, lors de la lecture de ce rapport, vous pouvez cacher le code en cliquant sur "Hide All Code" dans l'onglet "Code" en haut à droite de la page.  
-De plus, plusieurs packages sont utilisés pour faire fonctionner l'application, le chargement peut prendre un peu de temps mais une fois que tous les packages sont installés l'application fonctionne.  
-L'application a été testée sur différents ordinateurs, notamment ceux de l'Université.
+**Nota Bene** : Ce rapport présente l'application Shiny (disponible [ici](https://ameliegtrd.shinyapps.io/criminalite/)). Le code Github correspondant est disponible [à cette adresse](https://github.com/ameliegtrd/m1_visualisation_projet). Si vous souhaitez l'executer, plusieurs packages sont unécéssaires pour faire fonctionner l'application. Par conséquent, le chargement peut prendre un peu de temps mais une fois que tous les packages sont installés l'application fonctionne. Elle a été testée sur différents ordinateurs, notamment ceux de l'Université.
 
 # 1. Présentation du sujet 
 
-L’objectif de cette application (disponible [ici](https://ameliegtrd.shinyapps.io/criminalite/)) est de présenter à l‘utilisateur une interface qui lui permette d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
+L’objectif de cette application est de présenter à l‘utilisateur une interface qui lui permette d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
 
 Un modèle de données de panel a été estimé en utilisant les données des départements français. Pour construire notre modèle, nous avons considéré plusieurs facteurs sociaux qui pourraient contribuer à l’évolution du phénomène.
 
-L’analyse se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. Prenons la définition de la criminalité donnée par l’INSEE, les crimes et délits constatés en France sont des faits bruts portés pour la première fois à la connaissance des services de police et de gendarmerie. Sont exclus des statistiques de la criminalité constatée, l'ensemble des contraventions ainsi que les délits relatifs à la circulation routière, les actes de police administrative et les infractions relevées par d'autres administrations (douanes, services fiscaux et répression des fraudes, inspection du travail...).
+L’analyse se concentre sur les déterminants de tous les délits recensés en France métropolitaine en 2016. Prenons la définition de la criminalité donnée par l’INSEE : *"les crimes et délits constatés en France sont des faits bruts portés pour la première fois à la connaissance des services de police et de gendarmerie. Sont exclus des statistiques de la criminalité constatée, l'ensemble des contraventions ainsi que les délits relatifs à la circulation routière, les actes de police administrative et les infractions relevées par d'autres administrations (douanes, services fiscaux et répression des fraudes, inspection du travail...)"*.
 
 # 2. Présentation des données
 
 ## 2.1 Importation des données
 
-Dans un premier temps, nous avons importé les différentes bases de données. La base principale porte sur les délits en France en 2016. Nous avons supprimé les lignes vides intitulées « index non utilisés ». Ensuite, nous avons attribué comme nom de ligne, le nom des différents délits. Puis, nous avons transposé la base car nous souhaitions avoir les délits en colonne et nous avons ajouté une colonne comprenant les 96 départements de France métropolitaine. Suite à cela, nous avons importé les bases contenant les différents indicateurs. Les bases incluant les données sur la population, le taux de pauvreté et l’indice de Gini ont été importées facilement. Nous avons seulement dû renommer la variable département pour que les jointures se fassent naturellement. En revanche, nous avons dû modifier la base diplôme en regroupant certaines colonnes. Les variables représentant le niveau de diplôme étaient ordonnées par sexe et par tranche d’âge, nous avons donc regroupé les colonnes par type car nous nous intéressons à la population générale. De plus, les données étant triées par commune, nous avons effectué un nouveau regroupement pour les avoir par département. Enfin, nous avons ajouté la population totale pour chaque département afin de calculer la part de personnes diplômées et la part de personnes non-diplômées. Pour finir, la base sur le taux de chômage contenait des données allant de 1982 à 2019, nous avons seulement conservé les données de 2016. Les données étant présentées par trimestre, nous avons décidé d’en faire la moyenne pour avoir un taux de chômage annuel moyen pour chaque département. Nous avons convenu d'exclure le salaire médian de notre analyse puisque celui-ci diffère en fonction du département (ex : vie qui coûte plus chère à Paris donc salaires plus élevés) alors que l'indice de gini mesure l'inégalité des revenus. 
+Dans un premier temps, nous avons importé les différentes bases de données sur le site de l'INSEE (délits, diplôme, pauvreté, population, revenu médian Gini et taux de chômage).  Nous avons regroupé les bases concernant le diplôme, la pauvreté, la population, le revenu médian Gini et le taux de chômage dans un seul fichier excel *"donnees.xlsx"* (chacune dans une feuille différente). Ensuite, nous avons effectué un certain nombre de traitements présentés ci-dessous afin d'obtenir les bases qui sont proposées sur le site et stockées dans le fichier RData *"donnees_criminalite.RData"*. Vous pouvez accéder au traitement des données via le fichier *"traitements_donnees.Rmd"* disponible sur Github.    
+
+La base principale porte sur les délits en France en 2016. Nous avons supprimé les lignes vides intitulées « index non utilisés ». Ensuite, nous avons attribué comme nom de ligne, le nom des différents délits. Puis, nous avons transposé la base car nous souhaitions avoir les délits en colonne et nous avons ajouté une colonne comprenant les 96 départements de France métropolitaine. Suite à cela, nous avons importé les bases contenant les différents indicateurs. Les bases incluant les données sur la population, le taux de pauvreté et l’indice de Gini ont été importées facilement. Nous avons seulement dû renommer la variable département pour que les jointures se fassent naturellement. En revanche, nous avons dû modifier la base diplôme en regroupant certaines colonnes. Les variables représentant le niveau de diplôme étaient ordonnées par sexe et par tranche d’âge, nous avons donc regroupé les colonnes par type car nous nous intéressons à la population générale. De plus, les données étant triées par commune, nous avons effectué un nouveau regroupement pour les avoir par département. Enfin, nous avons ajouté la population totale pour chaque département afin de calculer la part de personnes diplômées et la part de personnes non-diplômées. Pour finir, la base sur le taux de chômage contenait des données allant de 1982 à 2019, nous avons seulement conservé les données de 2016. Les données étant présentées par trimestre, nous avons décidé d’en faire la moyenne pour avoir un taux de chômage annuel moyen pour chaque département.  
 
 Dans un second temps, nous avons vérifié qu’il n’y avait pas de données manquantes ou aberrantes. Une fois la révision faite, nous avons pu créer différentes bases. Il existe différents groupes de délits tels que les homicides, les violences sexuelles, les coups et blessures volontaires, les vols avec armes, etc.
 
 Ensuite, nous avons ajouté les marges sur la base complète : une ligne avec le nombre total de chaque délit ainsi qu’une colonne avec le nombre total de délits pour chaque département.
 
 Dans un dernier temps, nous avons fait la jointure des bases. Nous avons joint la base aux données concernant la population, la pauvreté, le diplôme, l’indice de Gini et le taux de chômage pour chaque département.
-
-```{r library, eval=TRUE, include=TRUE, results='hide', class.source = 'foldable'}
-# Definition du repertoire
-# getwd()
-# setwd("~/Desktop/scolarité/M1 MAS/Semestre 2/Visualisation/Projet/www")
-
-# Definition des librairies dont on a besoin
-load_lib <- c("tidyverse","readxl","lmtest","systemfit","ggcorrplot", "ggpmisc","cowplot","sandwich", "kableExtra", "knitr", "rAmCharts","plotly")
-
-# Packages necessaires qui ne sont pas installes
-install_lib <- load_lib[!load_lib %in% installed.packages()] 
-# Installation des packages manquants
-for (lib in install_lib) install.packages(lib,dependencies=TRUE) 
-# Chargement des packages
-sapply(load_lib,require,character=TRUE)
-
-
-### Importation des donnees
-
-## Donnees sur les délits en France en 2016
-
-# data delits_fr_2016
-readLines("www/delits_fr_2016.csv",2)
-# on regarde l'encodage
-guess_encoding("www/delits_fr_2016.csv")
-# on importe
-delits_fr_2016  <- read.csv("www/delits_fr_2016.csv", encoding = "utf-8", fileEncoding = "utf-8", sep=";",dec=".", header = T)
-# on supprime les 2 premieres colonnes et les delits "Index non utilise" 
-delits_fr_2016 <- delits_fr_2016 %>%  
-  filter(libellé.index != "Index non utilisé") %>%  
-  select(c(-1,-2)) 
-# on renomme les lignes
-rownames(delits_fr_2016) <- delits_fr_2016[,1]
-# on transpose et on ajoute une colonne departement
-departement=c("01","02","03","04","05","06","07","08","09",10:19,"2A","2B",21:95)
-delits_fr_2016_2  <- delits_fr_2016  %>% 
-  select(-1) %>% t %>% as.data.frame() %>% 
-  mutate("Departement" = departement) %>% 
-  relocate("Departement", .before = 1)
-# summary(delits_fr_2016_2)
-
-## Donnees population
-population  <- read_excel("www/donnees.xlsx", sheet ="Population", skip=7, col_names = T)
-population  <- population %>% rename("Departement" = "Code département")
-summary(population)
-
-## Donnees pauvrete
-pauvrete  <- read_excel("www/donnees.xlsx", sheet ="Pauvrete", skip=4, col_names = T)
-pauvrete <- pauvrete %>% select(-2) %>% rename("Departement" = "Code géographique")
-summary(pauvrete)
-
-## Donnees diplome
-diplome_inital <- read_excel("www/donnees.xlsx", col_names = T,sheet ="Diplome", skip=3)
-diplome_inital <- diplome_inital  %>% 
-  rename("Departement" = "Département\r\nen géographie courante") %>% 
-  select(c(-1,-3:-6))
-summary(diplome_inital)
-# on regroupe les colonnes
-Aucun_diplome = pull(round(diplome_inital[,2] + diplome_inital[,3] + diplome_inital[,4] + diplome_inital[,5]))
-Niveau_CAP_BEP = pull(round(diplome_inital[,5] + diplome_inital[,6] + diplome_inital[,7] + diplome_inital[,8]))
-Niveau_BAC = pull(round(diplome_inital[,9] + diplome_inital[,10] + diplome_inital[,11] + diplome_inital[,12]))
-Etudes_sup = pull(round(diplome_inital[,13] + diplome_inital[,14] + diplome_inital[,15] + diplome_inital[,16]))
-diplome = tibble(Departement = pull(diplome_inital[,"Departement"]),Aucun_diplome = Aucun_diplome, Niveau_CAP_BEP = Niveau_CAP_BEP, Niveau_BAC = Niveau_BAC, Etudes_sup = Etudes_sup)
-# on regroupe par departement
-diplome <- diplome %>% 
-  group_by(Departement) %>% 
-  summarise(
-    Aucun_diplome = sum(Aucun_diplome, na.rm=T),
-    Niveau_CAP_BEP = sum(Niveau_CAP_BEP, na.rm=T),
-    Niveau_BAC =sum(Niveau_BAC, na.rm = T),
-    Etudes_sup = sum(Etudes_sup, na.rm = T)
-  ) 
-# on ajoute pour chaque departement la "population" totale (relative aux donnees)
-diplome <- diplome %>% mutate(Total = rowSums(diplome[,2:ncol(diplome)]))
-# on ajoute le pourcentage de diplomes et de non diplomes pour chaque departement
-diplome <- diplome %>% mutate(Part_non_diplome = round((Aucun_diplome/Total)*100,3))
-
-## Donnees revenu median et indice de Gini
-revenu_median  <- read_excel("www/donnees.xlsx", sheet ="Revenu_median_Gini", skip=4, col_names = T)
-revenu_median <- revenu_median %>% rename("Departement" = "Code géographique") %>% select(-2)
-
-## Donnees taux de chomage
-taux_chomage  <- read_excel("www/donnees.xlsx", sheet ="Taux_chomage", col_names = T)
-# on ne garde que les donnees concernant l'annee 2016
-taux_chomage <- taux_chomage %>% rename("Departement" = "Code") %>% select("Departement","T1_2016","T2_2016","T3_2016","T4_2016")
-# on rajoute le taux de chomage moyen sur l'annee pour chaque departement
-taux_chomage <- taux_chomage %>% mutate(Taux_chomage_moyen = (T1_2016+T2_2016+T3_2016+T4_2016)/4)
-
-## Donnees manquantes ?
-# on regarde s'il y a des donnees manquantes
-delits_fr_2016_2 %>% summarise_all(~ sum(is.na(.))) # pour chaque colonne
-delits_fr_2016_2 %>% map_df(~sum(is.na(.))) %>% rowSums() # au total
-# aucune valeur manquante
-
-# On ajoute les marges sur la base complete (avec tous les delits)
-## on ajoute une ligne qui, pour chaque type de delit, compte le nombre de delits tout departement confondu
-delits_fr_2016_2["total_delits_par_type_delit",] <- c(NA,colSums(delits_fr_2016_2[,2:ncol(delits_fr_2016_2)]))
-# on ajoute une colonne qui pour chaque departement compte le nombre de delits commis
-delits_fr_2016_2 <- delits_fr_2016_2 %>% mutate(total_delits_par_departement = rowSums(delits_fr_2016_2[,2:ncol(delits_fr_2016_2)]))
-# On supprime les objets dont on n'a plus besoin
-rm(Aucun_diplome,departement,Etudes_sup,install_lib,lib,load_lib,Niveau_BAC,Niveau_CAP_BEP)
-
-## Jointure des bases
-# On joint a la base "delits_fr_2016_2" les donnees concernant la population, la pauvrete, le diplome, la revenu median et le taux de chomage pour chaque departement
-delits_fr_2016_final <- delits_fr_2016_2 %>% 
-  left_join(y = population,by="Departement") %>% 
-  left_join(y=pauvrete, by="Departement") %>% 
-  left_join(y=diplome, by="Departement") %>% 
-  left_join(y=revenu_median, by="Departement") %>% 
-  left_join(y=taux_chomage, by="Departement")
-
-delits_fr_2016_final[97,"Departement"] <- "Tout_departement"
-
-## Creation base finale
-# on cree notre base finale, avec uniquement les variables qu'on souhaite utiliser et on rajoute une colonne qui correspond au nombre de délits pour 100 000 habitants
-# pour tous les delits
-criminalite <- delits_fr_2016_final[-nrow(delits_fr_2016_final),] %>% 
-  select("Departement", Total_delits=total_delits_par_departement, Salaire_median = "Médiane (€)", Tx_pauvrete_seuil60 = "Taux de pauvreté au seuil de 60% (%)", "Taux_chomage_moyen","Part_non_diplome", Indice_gini = "Indice de Gini",Population="Population municipale") %>% 
-  mutate("Nb_delits_100000hab" = (Total_delits/Population)*100000)
-```
 
 ## 2.2 Dictionnaire des données
 
@@ -188,79 +67,52 @@ Nb_delits_100000hab | Nombre de délits violents pour 100 000 habitants par dép
 
 ## 3.1 Présentation de l'application
 
-C'est une application dynamique et intéractive. L'utilisateur a la possibilité de choisir le thème de celle-ci (clair ou sombre). Il peut aussi choisir la couleur de la barre de navigation, de la barre latérale et des accents. Pour faire son analyse, il a aussi le choix entre 4 bases de données (expliquées dans la partie "Présentation des données" de l'application) : base totale, base Criminalité, base Cambriolage et base Homicide.
+L'application Shiny est une application dynamique et intéractive. L'utilisateur a la possibilité de choisir le thème de celle-ci (clair ou sombre). Il peut aussi choisir la couleur de la barre de navigation, de la barre latérale et des accents. Pour faire son analyse, il a aussi le choix entre 4 bases de données (expliquées dans la partie "Présentation des données" de l'application) : base totale, base Criminalité, base Cambriolage et base Homicide.
 
-Notre application comporte 3 parties : 
+Notre application comporte 3 parties.
 
-- **Données** : Présentation des différentes bases de données et affichage de la table. 
-- **Carte** :  
-  - L'utilisateur pourra choisir la base de données qu'il souhaite représenter.  
-  - Affichage d'un boxplot du nombre de délits pour 100 000 habitants. 
-  - Affichage du nombre de délits par département (en cliquant sur un département de la carte).  
-- **Régression** :  
-  - L'utilisateur pourra choisir les variables de la regression.  
-  - Affichage d'un summary, d'une matrice de corrélation et du modèle linéaire (nuage de points et droite de régression).  
-  - Box d'interprétation des résultats. 
+### 3.1.1 Données  
+Cette section présente dans un premier temps les différentes bases de données puis dans un second temps affiche la table de donnnées que l'utilisateur aura sélectionnée. Il est également possible d'extraire la table sélectionnée au format csv ou alors de la copier.     
 
-## 3.2 Développement de l'application et difficultés rencontrées
+![Section Données - Affichage de la table](www/table_donnees.png)
 
-**AMELIE JE TE LAISSE FAIRE CETTE PARTIE**  
-**TU PEUX METTRE LES IDEES ET JE REDIGERAI**  
-**OU TU PEUX REDIGER SI TU VEUX :)**
 
-Pour construire notre application, nous nous sommes basées sur le [cours de Visualisation avec R](https://lrouviere.github.io/VISU/) de Laurent Rouvière. Mais nous avons aussi eu besoin de consulter différents tutoriels sur Internet notamment pour la création des messages pop-up
+### 3.1.2 Carte  
+Cette section représente le nombre de délits en France en 2016 par département sur une carte. L'utilisateur a le choix de la base de données (donc du type de criminalité) qu'il souhaite représenter. Il est possible d'obtenir la population du département ainsi que le nombdre délits pour 100 000 habitants en cliquant sur le département souhaité.  
+Aussi, est représenté le boxplot du nombre de délits correspondant à la table choisit pour tous les départements français.  
 
-L'utilisateur aura le choix des variables de la regression. Un message "pop-up" s'affichera pour avertir l'utilisateur de la non fiabilité des résultats et de la non fiabilité des résultats et pourquoi (auto-corrélation ect) + box qui interpréte les résultats de la régression.
+![Section Carte](www/carte.png)
 
-Pour en savoir plus sur la création d'une application [Shiny - RStudio](https://shiny.rstudio.com)
+### 3.1.3 Régression  
+Cette section comporte 3 boxes.  
+La première, intutilée *"Choix de la régression"* permet à l'utilisateur de choisir la table de données ainsi que les variables qu'il souhaite intégrer dans son modèle linéaire afin d'établir la régression associée.  
+Le modèle prendra comme variable à expliquer Y le nombre de délits pour 100 000 habitants. Les variables explicatives au choix sont le taux de pauvreté au seuil de 60%, le taux de chômage moyen, la part de non diplômé, l'indice de Gini ainsi que le salaire médian.  
+Attention toutefois, le salaire médian diffère en fonction du département (ex : vie qui coûte plus chère à Paris donc salaires plus élevés) alors que l'indice de Gini mesure l'inégalité des revenus.  
+Pour valider son choix, l'utilisateur appuie sur le bouton "OK". Une fenêtre pop-up apparaît ensuite pour l'avertir d'être prudent à l'égard des résultats issus de la régression linéaire. 
+En effet, nous avons appliqué une régression avec ajustement des Moindres Carrés Ordinaires (MCO) sans vérification des conditions nécessaires. Ainsi, nous supposons que la distribution suit une loi normale, que le modèle est bien spécifié et qu'il n'y pas de problème d'autoccorélation d'ordre 1 des aléas ni de problème d'hétéroscédasticité.  
 
-# 4. Quelques statistiques
+Pour rappel, un modèle linéaire est définit par :  
+*On considère deux variables* \(X\) *et * \(Y\) *et l'on dispose d'observations* ( \( x_i, Y_i \) ), \(i = 1, ..., n\). *Ecriture analytique : *   
+$$ Y_i = \beta_0 + \beta_1 \cdot x_i + \epsilon_i ,  \forall i =1,...,n $$ 
+*Hypothèses :*  
+- *Centrage : * \( \mathbb{E}[\epsilon_i] = 0 \),  
+- *Homoscédasticité : * \(  \mathbb{V}[\epsilon_i] = \sigma^2, \forall i \),  
+- *Décorrélation : * \( Cov(\epsilon_i, \epsilon_j) = 0, \forall i \neq j \)  
 
-## 4.1 Statistiques univariées
+La seconde boxe intitulée *"Interprétation des résultats"* guide l'utilisateur quant à l'interprétation des résultats obtenus.  
+Pour ce faire, nous avons rédigé des phrases types permettant d'interpréter le R^2, la statistique de Fisher et sa p-valeur associée. Les valeurs s'ajustent en fonction des résultats du summary obtenus par le modèle choisit.  
 
-Commençons par faire des statistiques univariées. A l’aide de boites à moustaches, nous allons étudier la distribution du nombre de délits pour 100 000 habitants en France métropolitaine en 2016 par département.
+Enfin, la toisième boxe *"Résultats"* affiche dans l'onglet "Summary" la sortie R associé au modèle de régression linéaire choisit. Dans l'onglet *"Plots"* est représentée la Heatmap affichant la matrice de corrélation pour les variables sélectionnées par l'utilisateur. En cliquant sur une case de celle-ci, apparaît en dessous le nuage de point des variables correspondantes avec la droite de régression du modèle linéaire.  
 
-```{r}
-# Boxplot du nombre total de delits
-amBoxplot(criminalite$Nb_delits_100000hab, xlab="", ylab="Nombre de délits", main="Boxplot du nombre de délits en France métropolitaine en 2016")
-# criminalite$Nb_delits_100000hab %>% summary()
-```
+![Section Régression](www/regression.png)
 
-La moitié des départements recensent moins de 4 373 délits pour 100 000 habitants et 75% des départements ont un nombre de délits inférieur à 5 268 pour 100 000 habitants. Parmi les 25% ayant un nombre de délit supérieur à 5 268, plusieurs départements présentent des valeurs considérées comme atypiques. 
-Par ailleurs, il n’y a aucune valeur atypique en dessous de la boite à moustache.  
+## 3.2 Développement de l'application  
+Nous avons basé notre application sur le package "bs4Dash" qui utilise la version Boostrap 4 du shinydashboard par AdminLTE3 (exemple [ici](https://adminlte.io/themes/v3/index2.html)). Il y a plusieurs fonctionnalités disponibles en plus du package "shinydashboard" que nous aurions aimé utiliser. Cependant, celles-ci n'étaient pas pertinentes dans le cadre de notre problématique. Exemple [ici](https://rinterface.github.io/bs4Dash/articles/bs4Dash.html#introduction) des différences entre les packages "shinydashboard", "shinydashboardPlus" et "bs4Dash".  
 
-Voici le tableau des 10 departements qui ont le plus de delits pour 100 000 habitants :
 
-```{r echo=TRUE, results='asis'}
-# Top des 10 departements qui ont le plus de delits
-knitr::kable(criminalite %>% slice_max(Nb_delits_100000hab,n=10) %>% select("Departement","Nb_delits_100000hab")) %>% 
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
-```
+# Sources  
+Pour nous familiariser avec Shiny, nous nous sommes basées sur le [cours de Visualisation avec R](https://lrouviere.github.io/VISU/pres_shiny.pdf) de *Laurent Rouvière* et *Benoît Thieurmel*.  
 
-Le département de la Seine (75) compte 12 403 délits pour 100 000 habitants en 2016. C'est le département qui compte le plus de délits pour 100 000 habitants.
+Nous avons également consulté l'[aide en ligne](https://rstudio.github.io/shinydashboard/structure.html#background-shiny-and-html) sur le site de *Rstudio*. 
 
-## 4.2 Statistiques bivariées
-
-Tout d'abord, prenons un exemple et représentons le nuage de points et la droite de régression entre le nombre de délits pour 100 000 habitants et le taux de pauvreté.
-
-Voici le modèle :
-```{r}
-model <- lm(Tx_pauvrete_seuil60~Nb_delits_100000hab,data=criminalite)
-model
-```
-
-Représentation graphique :
-```{r}
-# Nuage de points entre criminalite et taux de pauvrete
-criminalite %>% plot_ly(x=~Nb_delits_100000hab, y=~Tx_pauvrete_seuil60) %>%
-  add_markers(type="scatter",mode="markers",
-              marker=list(color="blue"),name="Nuage de points") %>% 
-  add_trace(y=fitted(model),type="scatter",mode='lines',
-            name="Régression",line=list(color="red")) %>% 
-  layout(title="Régression entre la criminalité et le taux de pauvreté pour 100 000 habitants",
-         xaxis=list(title="Nombre de délits pour 100 000 habitants"),
-         yaxis=list(title="Taux de pauvreté au seuil 60%"))
-```
-
-Il y a corrélation positive entre le taux de pauvreté et le nombre de délits pour 100 000 habitants (0.31).  
-**Attention :**  Cela ne permet pas d'affirmer un lien de causalité entre les variables. Les indicateurs de corrélations aident à formaliser le modèle mais on ne peut pas parler de lien de causalité. 
+Documentation sur le package *bs4Dash* : [ici](https://cran.r-project.org/web/packages/bs4Dash/bs4Dash.pdf).  
