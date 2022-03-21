@@ -1,9 +1,0 @@
-- Quand la navigation est en petit, afficher Crime
-- Partie données : présenter la base de données et afficher la table
-- Partie stats desc :  
-	-- premier onglet : choisir le type de criminalité, et afficher par département le nombre total de crime et pour 100 000 habitants 
-	   + boxplot et tableau (médiane ect)
-	--  deuxieme onglet : choisir un département et affiche un "pie graph" avec les pourcentages de type de crime 
-	   + possibilité de comparer 2 département 
-- Partie régression : laisser le choix à l'utilisateur des variables de la régression, afficher un message "pop-up" qui avertit 
-de la non fiabilité des résultats et pourquoi (auto-corrélation ect) + box qui interpréte les résultats de la régression 
