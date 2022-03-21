@@ -25,7 +25,7 @@ baccueil <- fluidRow(
     collapsible = TRUE, 
     align="justify",
     "L’objectif de cette application est de présenter à l‘utilisateur une interface qui lui permet d’identifier et d’analyser le taux de criminalité en France métropolitaine en 2016. 
-    Les données sont issues de l'INSEE et on été traitées pour obtenir les bases de données qui seront utilisées dans cette application.", br(), 
+    Les données sont issues de l'INSEE et ont été traitées pour obtenir les bases de données qui seront utilisées dans cette application.", br(), 
     "L'utilisateur pourra choisir une base parmi les quatres proposées ci-dessous : ", br(), br(),
     column(
       width = 12,
@@ -233,6 +233,7 @@ ui <- dashboardPage(
   ## contenu des pages
   dashboardBody(
     useShinyjs(),
+    includeCSS("www/style.css"),
     tags$link(rel = "stylesheet", type = "text/css", href = "www/style.css"),
     tabItems(
       # page donnees
